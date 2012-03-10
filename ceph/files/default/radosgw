@@ -8,16 +8,18 @@
 # Short-Description: radosgw
 ### END INIT INFO
 
-PATH=/sbin:/bin:/usr/bin
-
 . /lib/lsb/init-functions
 
-CLIENT_NAME=client.rgw-`hostname | sed 's/\..*//g'`
+CLIENT_NAME=client.radosgw.`hostname -s`
 USER=www-data
+DAEMON=/usb/bin/radosgw
+CONF_FILE=/etc/ceph/ceph.conf
 
 
 do_start () {
-        su $USER -c "radosgw -c /etc/ceph/ceph.conf -n $CLIENT_NAME >> /var/log/radosgw/radosgw.log 2>&1 &"
+# Need log integration
+#        start-stop-daemon --start --quiet --oknodo --chuid $USER --exec $DAEMON -- -c $CONF_FILE -n $CLIENT_NAME 
+        su -u $USER -c "$DAEMON -c $CONF_FILE -n $CLIENT_NAME >> /var/log/radosgw/radosgw.log 2>&1 &"
 }
 
 case "$1" in
