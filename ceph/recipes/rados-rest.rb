@@ -20,7 +20,6 @@
 
 packages = %w{
 	radosgw
-	radosgw-dbg
 	librados2
 	librgw1
 }
