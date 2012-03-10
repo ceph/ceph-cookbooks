@@ -18,21 +18,16 @@
 # limitations under the License.
 		        
 include_recipe "ceph::rados-rest"
+include_recipe "ceph::default"
+include_recipe "apache2"
 
 packages = %w{
-	apache2
-	apache2-mpm-worker
-	apache2-utils
-	apache2.2-bin
-	apache2.2-common
 	libapache2-mod-fastcgi
 }
 
-include_recipe "apache2"
-
 packages.each do |pkg|
 	package pkg do 
-		action :upgrade
+		action :install
 	end
 end
 
@@ -49,6 +44,12 @@ service "radosgw" do
 	action[:enable,:start]
 end
 
+directory "/var/run/ceph" do
+	owner "root"
+	mode "0755"
+	action :create
+end
+
 apache_module "fastcgi" do
 	conf true
 end
@@ -57,22 +58,39 @@ apache_module "rewrite" do
 	conf false
 end
 
+apache_module "headers" do
+	conf false
+end
+
+template "/var/www/dummyradosgw.fcgi" do
+	source "dummyradosgw.fcgi.erb"
+	mode 0755
+end
+
 template "/etc/apache2/sites-available/rgw.conf" do
 	source "rgw.conf.erb"
 	mode 0400
 	owner "root"
 	group "root"
 	variables(
-		:ceph_api_fqdn => node[:ceph][:api_fqdn],
-		:ceph_admin_email => node[:ceph][:admin_email],
-		:ceph_rgw_addr => node[:ceph][:rgw_addr]
+		:ceph_api_fqdn => node[:ceph][:radosgw][:api_fqdn],
+		:ceph_admin_email => node[:ceph][:radosgw][:admin_email],
+		:ceph_rgw_addr => node[:ceph][:radosgw][:rgw_addr]
 	)
-	if ::File.exists?("#{node[:apache][:dir]}/sites-enabled/rgw.conf")
-		notifies :restart, "service[apache2]"
-	end
+#	if ::File.exists?("#{node[:apache][:dir]}/sites-enabled/rgw.conf")
+#		notifies :restart, "service[apache2]"
+#	end
 end
 
 apache_site "rgw.conf" do
 	enable enable_setting
 end
 
+#firewall rule
+
+#firewall_rule "radosgw" do
+#	port 80
+#	protocol :tcp
+#	action :allow
+#	notifies :enable, "firewall[ufw]"
+#end
