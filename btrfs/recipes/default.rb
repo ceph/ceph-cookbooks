@@ -19,7 +19,6 @@
 
 packages = %w{
 	btrfs-tools
-	btrfs-tools-dbg
 }
 
 packages.each do |pkg|
