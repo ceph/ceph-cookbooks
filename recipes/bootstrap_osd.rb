@@ -64,18 +64,15 @@ else
         if node["crowbar"]["disks"][disk]["usage"] == "Storage" and use == true
           puts "Disk: #{disk} should be used for ceph!"
 
-          system 'ceph-disk-prepare', \
-            "/dev/#{disk}"
-          raise 'ceph-disk-prepare failed' unless $?.exitstatus == 0
-
-          system 'udevadm', \
-            "trigger", \
-            "--subsystem-match=block", \
-            "--action=add"
-          raise 'udevadm trigger failed' unless $?.exitstatus == 0
+          if system "df /dev/#{disk}1"
+            system "umount /dev/#{disk}1"
+          end
+          system "ceph-disk-prepare /dev/#{disk}"
+          system "udevadm trigger --subsystem-match=block --action=add"
 
           node["crowbar"]["disks"][disk]["usage"] = "ceph-osd"
           node.save
+          puts "#{disk} is being set to ceph-osd!"
         end
       end
     end
