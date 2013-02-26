@@ -1,6 +1,7 @@
 #
+# Author:: Kyle Bader <kyle.bader@dreamhost.com>
 # Cookbook Name:: ceph
-# Attributes:: radosgw
+# Recipe:: radosgw_apache2
 #
 # Copyright 2011, DreamHost Web Hosting
 #
@@ -15,8 +16,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
-default["ceph"]["radosgw"]["api_fqdn"] = "localhost"
-default["ceph"]["radosgw"]["admin_email"] = "admin@example.com"
-default["ceph"]["radosgw"]["rgw_addr"] = "*:80"
-default["ceph"]["radosgw"]["webserver_companion"] = "apache2" #can be false
+
+include_recipe "apache2"
+include_recipe "apache2::mod_fastcgi"
+
+apache_module "rewrite" do
+  conf false
+end
+
+web_app "rgw" do
+  template "rgw.conf.erb"
+  server_name node['ceph']['radosgw']['api_fqdn']
+  admin_email node['ceph']['radosgw']['admin_email']
+  ceph_rgw_addr node['ceph']['radosgw']['rgw_addr']
+end
