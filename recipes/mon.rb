@@ -43,7 +43,7 @@ unless File.exists?("/var/lib/ceph/mon/ceph-#{node["hostname"]}/done")
 
   execute "format as keyring" do
     command "ceph-authtool '#{keyring}' --create-keyring --name=mon. --add-key='#{node["ceph"]["monitor-secret"]}' --cap mon 'allow *'"
-    creates "#{Chef::Config[:file_cache_path]}/#{cluster}-#{node['hostname']}.mon.keyring"
+    creates keyring
   end
 
   execute 'ceph-mon mkfs' do
