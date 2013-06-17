@@ -44,3 +44,29 @@ action :delete do
     command("rbd rm #{pool} #{new_resource.name}")
   end
 end
+
+action :map do
+  Chef::Log.info("Mapping block device '#{new_resource.name}'")
+
+  if new_resource.pool
+    pool = "-p #{new_resource.pool}"
+  end
+
+  execute "map rbd image" do
+    not_if "rbd #{pool} showmapped | grep #{new_resource.name}"
+    command("rbd map #{pool} #{new_resource.name}")
+  end
+end
+
+action :unmap do
+  Chef::Log.info("Unmapping block device '#{new_resource.name}' mounted at '#{new_resource.device}'")
+
+  if new_resource.pool
+    pool = "-p #{new_resource.pool}"
+  end
+
+  execute "unmap rbd image" do
+    only_if "rbd #{pool} showmapped | grep #{new_resource.device}"
+    command("rbd unmap #{pool} #{new_resource.device}")
+  end
+end

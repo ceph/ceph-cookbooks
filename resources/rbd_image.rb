@@ -17,9 +17,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-actions :create, :delete
+actions :create, :delete, :map, :unmap
 default_action :create
 
-attribute :name,       :kind_of => String,          :name_attribute => true
+attribute :name,      :kind_of => String,          :name_attribute => true
 attribute :pool,      :kind_of => String,          :default => nil
 attribute :size,      :kind_of => Fixnum,          :default => nil
+attribute :device,     :kind_of => String,          :default => nil
