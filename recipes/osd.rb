@@ -95,6 +95,14 @@ else
       end
     end
   else
+
+    # ceph-disk-activate requires this directory
+    directory "/var/lib/ceph/tmp" do
+      owner "root"
+      group "root"
+      mode "0755"
+    end
+
     # Calling ceph-disk-prepare is sufficient for deploying an OSD
     # After ceph-disk-prepare finishes, the new device will be caught
     # by udev which will run ceph-disk-activate on it (udev will map
