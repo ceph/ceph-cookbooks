@@ -56,6 +56,12 @@ else
     group "root"
     mode "0755"
   end
+  
+  directory "/var/lib/ceph/osd" do
+    owner "root"
+    group "root"
+    mode "0755"
+  end
 
   # TODO cluster name
   cluster = 'ceph'
