@@ -19,12 +19,22 @@
 default["ceph"]["radosgw"]["api_fqdn"] = "localhost"
 default["ceph"]["radosgw"]["admin_email"] = "admin@example.com"
 default["ceph"]["radosgw"]["rgw_addr"] = "*:80"
-default["ceph"]["radosgw"]["rgw_port"] = false
-default["ceph"]["radosgw"]["webserver_companion"] = "apache2" #can be false
+default["ceph"]["radosgw"]["webserver_companion"] = "apache2" # can be false
 default['ceph']["radosgw"]['use_apache_fork'] = true
+default["ceph"]["radosgw"]["log_file"] = "/var/log/ceph/radosgw.log"
 case node['platform']
 when 'ubuntu'
   default["ceph"]["radosgw"]["init_style"] = "upstart"
 else
   default["ceph"]["radosgw"]["init_style"] = "sysvinit"
+end
+
+include_attribute "ceph::conf"
+
+default["ceph"]["config"]["radosgw"]["host"]     = node['hostname']
+default["ceph"]["config"]["radosgw"]["rgw socket path"] = "/var/run/ceph/radosgw.#{node['hostname']}"
+default["ceph"]["config"]["radosgw"]["log file"] = node["ceph"]["radosgw"]["log_file"]
+default["ceph"]["config"]["radosgw"]["keyring"]  = "/etc/ceph/ceph.client.radosgw.#{node['hostname']}.keyring"
+unless node["ceph"]["config"]["radosgw"]["rgw socket path"]
+  default["ceph"]["config"]["radosgw"]["rgw port"] = 2374
 end

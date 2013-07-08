@@ -17,6 +17,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+node.override["ceph"]["radosgw"]["enable"] = true
+include_recipe "ceph::conf"
+
 case node['platform_family']
 when "debian"
   packages = %w{
@@ -40,8 +43,6 @@ packages.each do |pkg|
     action :upgrade
   end
 end
-
-include_recipe "ceph::conf"
 
 unless File.exists?("/var/lib/ceph/radosgw/ceph-radosgw.#{node['hostname']}/done")
   if node["ceph"]["radosgw"]["webserver_companion"]
@@ -67,22 +68,22 @@ unless File.exists?("/var/lib/ceph/radosgw/ceph-radosgw.#{node['hostname']}/done
   file "/var/lib/ceph/radosgw/ceph-radosgw.#{node['hostname']}/done" do
     action :create
   end
-
-  service "radosgw" do
-    case node["ceph"]["radosgw"]["init_style"]
-    when "upstart"
-      service_name "radosgw-all-starter"
-      provider Chef::Provider::Service::Upstart
-    else
-      if node['platform'] == "debian"
-        service_name "radosgw"
-      else
-        service_name "ceph-radosgw"
-      end
-    end
-    supports :restart => true
-    action [ :enable, :start ]
-  end
 else
   Log.info("Rados Gateway already deployed")
+end
+
+service "radosgw" do
+  case node["ceph"]["radosgw"]["init_style"]
+  when "upstart"
+    service_name "radosgw-all-starter"
+    provider Chef::Provider::Service::Upstart
+  else
+    if node['platform'] == "debian"
+      service_name "radosgw"
+    else
+      service_name "ceph-radosgw"
+    end
+  end
+  supports :restart => true
+  action [ :enable, :start ]
 end
