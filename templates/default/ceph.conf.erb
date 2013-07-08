@@ -10,37 +10,37 @@
 
 <% unless node['ceph']['config']['osd'].nil? -%>
 [osd]
-  <% node['ceph']['config']['osd'].each do |k, v| %>
+<%   node['ceph']['config']['osd'].each do |k, v| -%>
   <%= k %> = <%= v %>
-  <% end %>
+<%   end -%>
 <% end -%>
 
 <% unless node['ceph']['config']['mon'].nil? -%>
 [mon]
-  <% node['ceph']['config']['mon'].each do |k, v| %>
+<%   node['ceph']['config']['mon'].each do |k, v| -%>
   <%= k %> = <%= v %>
-  <% end %>
+<%   end -%>
 <% end -%>
 
 <% unless node['ceph']['config']['mds'].nil? -%>
 [mds]
-  <% node['ceph']['config']['mds'].each do |key, value| -%>
+<%   node['ceph']['config']['mds'].each do |key, value| -%>
   <%= key %> = <%= value %>
-  <%   end -%>
+<%   end -%>
 <% end -%>
 
 <% if node['ceph']["radosgw"]["enable"] -%>
 [client.radosgw.<%= node['hostname'] %>]
-<% node['ceph']['config']['radosgw'].each do |config, value| -%>
-<%   if value -%>
+<%   node['ceph']['config']['radosgw'].each do |config, value| -%>
+<%     if value -%>
   <%= config %> = <%= value %>
+<%     end -%>
 <%   end -%>
-<% end -%>
 
 <% end -%>
-<% node['ceph']['config-sections'].each do |name, sect| %>
+<% node['ceph']['config-sections'].each do |name, sect| -%>
 [<%= name %>]
-  <% sect.each do |k, v| %>
+<%   sect.each do |k, v| -%>
   <%= k %> = <%= v %>
-  <% end %>
-<% end %>
+<%   end -%>
+<% end -%>
