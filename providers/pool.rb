@@ -19,25 +19,31 @@
 # limitations under the License.
 #
 
+def whyrun_supported?
+  true
+end
 
 action :create do
-  Chef::Log.info("Creating pool '#{new_resource.name}'")
-
-  execute "create pool" do
-    not_if "rados lspools | grep #{new_resource.name}"
-    command("rados mkpool #{new_resource.name}")
+  converge_by("Creating pool '#{new_resource.name}'") do
+    execute "create pool" do
+      not_if "rados lspools | grep #{new_resource.name}"
+      command("rados mkpool #{new_resource.name}")
+    end
+    Chef::Log.info("Created` pool '#{new_resource.name}'")
   end
 end
 
 action :delete do
-  Chef::Log.info("Deleting pool '#{new_resource.name}'")
   
-  execute "delete pool" do
-    only_if "rados lspools | grep #{new_resource.name}"
-    if new_resource.force == true
-      command("rados rmpool #{new_resource.name} #{new_resource.name} --yes-i-really-really-mean-it")
-    else
-      command("rados rmpool #{new_resource.name}")
+  converge_by("Deleting pool '#{new_resource.name}'") do
+    execute "delete pool" do
+      only_if "rados lspools | grep #{new_resource.name}"
+      if new_resource.force == true
+        command("rados rmpool #{new_resource.name} #{new_resource.name} --yes-i-really-really-mean-it")
+      else
+        command("rados rmpool #{new_resource.name}")
+      end
+      Chef::Log.info("Deleted pool '#{new_resource.name}'")
     end
   end
 end
