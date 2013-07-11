@@ -43,7 +43,7 @@ unless File.exists?("/var/lib/ceph/mon/ceph-#{node["hostname"]}/done")
 
   execute "format as keyring" do
     command "ceph-authtool '#{keyring}' --create-keyring --name=mon. --add-key='#{node["ceph"]["monitor-secret"]}' --cap mon 'allow *'"
-    creates "#{Chef::Config[:file_cache_path]}/#{cluster}-#{node['hostname']}.mon.keyring"
+    creates keyring
   end
 
   execute 'ceph-mon mkfs' do
@@ -97,7 +97,7 @@ ruby_block "get osd-bootstrap keyring" do
   block do
     run_out = ""
     while run_out.empty?
-      run_out = Mixlib::ShellOut.new("ceph auth get-key client.bootstrap-osd").run_command.stdout.strip
+      run_out = Mixlib::ShellOut.new("ceph --name mon. --keyring /var/lib/ceph/mon/ceph-#{node['hostname']}/keyring auth get-key client.bootstrap-osd").run_command.stdout.strip
       sleep 2
     end
     node.override['ceph']['bootstrap_osd_key'] = run_out
