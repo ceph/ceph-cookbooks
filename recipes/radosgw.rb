@@ -38,6 +38,7 @@ end
 packages.each do |pkg|
   package pkg do
     action :upgrade
+    version node[:ceph][:version]
   end
 end
 
