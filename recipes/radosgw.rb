@@ -45,7 +45,7 @@ include_recipe "ceph::conf"
 
 unless File.exists?("/var/lib/ceph/radosgw/ceph-radosgw.#{node['hostname']}/done")
   if node["ceph"]["radosgw"]["webserver_companion"]
-    include_recipe "cephs::radosgw_#{node["ceph"]["radosgw"]["webserver_companion"]}"
+    include_recipe "ceph::radosgw_#{node["ceph"]["radosgw"]["webserver_companion"]}"
   end
 
   ruby_block "create rados gateway client key" do
