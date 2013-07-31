@@ -45,7 +45,7 @@ if !search(:node,"hostname:#{node['hostname']} AND dmcrypt:true").empty?
 end
 
 service_type = node["ceph"]["osd"]["init_style"]
-mons = get_mon_nodes("ceph_bootstrap_osd_key:*")
+mons = get_mon_nodes( node['ceph']['config']['global']['auth cluster required'] == "cephx" ? "ceph_bootstrap_osd_key:*" : nil)
 
 if mons.empty? then
   puts "No ceph-mon found."
@@ -106,7 +106,8 @@ else
     #  - The --dmcrypt option will be available starting w/ Cuttlefish
     unless node["ceph"]["osd_devices"].nil?
       node["ceph"]["osd_devices"].each_with_index do |osd_device,index|
-        unless osd_device["status"]
+        unless osd_device["status"].nil?
+          puts "Device skipped: #{osd_device[:device]} is #{osd_device[:status]}"
           next
         end
         dmcrypt = ""

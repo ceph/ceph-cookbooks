@@ -93,15 +93,17 @@ end
 # The key is going to be automatically
 # created,
 # We store it when it is created
-ruby_block "get osd-bootstrap keyring" do
-  block do
-    run_out = ""
-    while run_out.empty?
-      run_out = Mixlib::ShellOut.new("ceph auth get-key client.bootstrap-osd").run_command.stdout.strip
-      sleep 2
+if node['ceph']['config']['global']['auth cluster required'] == "cephx"
+  ruby_block "get osd-bootstrap keyring" do
+    block do
+      run_out = ""
+      while run_out.empty?
+        run_out = Mixlib::ShellOut.new("ceph auth get-key client.bootstrap-osd").run_command.stdout.strip
+        sleep 2
+      end
+      node.override['ceph']['bootstrap_osd_key'] = run_out
+      node.save
     end
-    node.override['ceph']['bootstrap_osd_key'] = run_out
-    node.save
+    not_if { node['ceph']['bootstrap_osd_key'] }
   end
-  not_if { node['ceph']['bootstrap_osd_key'] }
 end
