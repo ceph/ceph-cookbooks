@@ -13,7 +13,7 @@ LogFormat "%{X-Forwarded-For}i %h %l %u %t \"%r\" %>s %O \"%{Referer}i\" \"%{Use
 <%   node['ceph']['radosgw']['api_aliases'].each do |api_alias| -%>
   ServerAlias <%= api_alias %>
 <%   end %>
-<% end ->
+<% end -%>
   ServerAdmin <%= node["ceph"]["radosgw"]["admin_email"] %>
   DocumentRoot /var/www/
 
