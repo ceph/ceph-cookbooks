@@ -34,8 +34,37 @@
 include_recipe "ceph::default"
 include_recipe "ceph::conf"
 
+if !node["ceph"]["osd_devices"].nil?
+  node["ceph"]["osd_devices"].each do |osd_device|
+    Log.info("ceph-osd device: #{osd_device}")
+  end
+elsif node["ceph"]["osd_autoprepare"]
+   # set node["ceph"]["osd_autoprepare"] to true to enable automated osd disk
+   # discovery and preparation
+   osd_devices = Array.new
+   node['block_device'].select{|device,info| device =~ /^[hvs]d[^a]$/ and info['size'].to_i > 0}.each do |device,info|
+    Log.info("ceph-osd: Candidate Device /dev/#{device} found.")
+    osd_devices << {"device" => "/dev/#{device}"}
+  end
+  Log.info("ceph-osd: New Candidates = #{osd_devices}")
+  node.set["ceph"]["osd_devices"] = osd_devices
+  node.save
+else
+  Log.warn('ceph-osd: No ceph osd_devices have been set and ceph osd_autoprepare not enabled.')
+end
+
 package 'gdisk' do
   action :upgrade
+end
+
+# sometimes there are partitions on the disk that interfere with
+# ceph-disk-prepare, so let's make sure there's nothing on each candidate disk 
+if node["ceph"]["osd_autoprepare"] and !node["ceph"]["osd_devices"].nil?
+  node["ceph"]["osd_devices"].each do |osd_device|
+    Log.info("ceph-osd: Erasing #{osd_device['device']} to prepare it as an osd")
+    system 'sgdisk', '-oZ', "#{osd_device['device']}"
+    raise "ceph-osd: erase of #{osd_device['device']} failed" unless $?.exitstatus == 0
+  end
 end
 
 if !search(:node,"hostname:#{node['hostname']} AND dmcrypt:true").empty?
@@ -48,7 +77,7 @@ service_type = node["ceph"]["osd"]["init_style"]
 mons = get_mon_nodes("ceph_bootstrap_osd_key:*")
 
 if mons.empty? then
-  puts "No ceph-mon found."
+  Log.info("ceph-osd: No ceph-mons found.")
 else
 
   directory "/var/lib/ceph/bootstrap-osd" do
@@ -104,16 +133,18 @@ else
     # osd/$cluster-$id)
     #  - $cluster should always be ceph
     #  - The --dmcrypt option will be available starting w/ Cuttlefish
+    Log.info("ceph-osd: Starting setup of osd_devices.")
     unless node["ceph"]["osd_devices"].nil?
       node["ceph"]["osd_devices"].each_with_index do |osd_device,index|
         if !osd_device["status"].nil?
-          Log.info("osd: osd_device #{osd_device} has already been setup.")
+          Log.info("ceph-osd: osd_device #{osd_device} has already been setup.")
           next
         end
         dmcrypt = ""
         if osd_device["encrypted"] == true
           dmcrypt = "--dmcrypt"
         end
+        Log.info("ceph-osd: creating osd on #{osd_device['device']}.")
         execute "Creating Ceph OSD on #{osd_device['device']}" do
           command "ceph-disk-prepare #{dmcrypt} #{osd_device['device']} #{osd_device['journal']}"
           action :run
@@ -143,7 +174,7 @@ else
         supports :restart => true
       end
     else
-      Log.info('node["ceph"]["osd_devices"] empty')
+      Log.info('ceph-osd: No ceph osd_devices have been set.')
     end
   end
 end
