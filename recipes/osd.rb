@@ -62,8 +62,10 @@ end
 if node["ceph"]["osd_autoprepare"] and !node["ceph"]["osd_devices"].nil?
   node["ceph"]["osd_devices"].each do |osd_device|
     Log.info("ceph-osd: Erasing #{osd_device['device']} to prepare it as an osd")
-    system 'sgdisk', '-oZ', "#{osd_device['device']}"
-    raise "ceph-osd: erase of #{osd_device['device']} failed" unless $?.exitstatus == 0
+    devicewipe = Mixlib::ShellOut.new("sgdisk -oZ #{osd_device['device']}").run_command
+    if devicewipe.error!
+      raise "ceph-osd: erase of #{osd_device['device']} failed!"
+    end
   end
 end
 
