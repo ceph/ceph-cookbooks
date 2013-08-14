@@ -54,8 +54,8 @@ else
 end
 
 package 'gdisk' do
-  action :upgrade
-end
+  action :nothing
+end.run_action(:upgrade)
 
 # sometimes there are partitions on the disk that interfere with
 # ceph-disk-prepare, so let's make sure there's nothing on each candidate disk 
