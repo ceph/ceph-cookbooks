@@ -31,7 +31,8 @@ end
 
 if node['ceph']['config']['fsid'].nil?
   Log.info("ceph-setup: ceph fsid not set - generating a new fsid")
-  fsid = Mixlib::ShellOut.new("uuidgen").run_command.stdout.strip
+  require 'securerandom'
+  fsid = SecureRandom.uuid
   node.set['ceph']['config']['fsid'] = fsid
   node.save
   Log.info("ceph-setup: ceph fsid has been set to #{fsid}")
