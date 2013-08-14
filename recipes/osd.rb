@@ -36,7 +36,7 @@ include_recipe "ceph::conf"
 
 if !node["ceph"]["osd_devices"].nil?
   node["ceph"]["osd_devices"].each do |osd_device|
-    Log.info("ceph-osd device: #{osd_device}")
+    Log.info("ceph-osd: #{osd_device}")
   end
 elsif node["ceph"]["osd_autoprepare"]
    # set node["ceph"]["osd_autoprepare"] to true to enable automated osd disk
@@ -61,10 +61,16 @@ end
 # ceph-disk-prepare, so let's make sure there's nothing on each candidate disk 
 if node["ceph"]["osd_autoprepare"] and !node["ceph"]["osd_devices"].nil?
   node["ceph"]["osd_devices"].each do |osd_device|
-    Log.info("ceph-osd: Erasing #{osd_device['device']} to prepare it as an osd")
-    devicewipe = Mixlib::ShellOut.new("sgdisk -oZ #{osd_device['device']}").run_command
-    if devicewipe.error!
-      raise "ceph-osd: erase of #{osd_device['device']} failed!"
+    if osd_device['status'].nil?
+      Log.info("ceph-osd: Erasing #{osd_device['device']} to prepare it as an osd")
+      devicewipe = Mixlib::ShellOut.new("sgdisk -oZ #{osd_device['device']}").run_command
+      if devicewipe.error!
+        raise "ceph-osd: erase of #{osd_device['device']} failed!"
+      end
+    elsif osd_device['status'] == 'deployed'
+      Log.info("ceph-osd: Not erasing #{osd_device['device']} as it has already been deployed.")
+    else
+      Log.info("ceph-osd: Not erasing #{osd_device['device']} as it has an unrecognised status.")
     end
   end
 end
@@ -135,11 +141,10 @@ else
     # osd/$cluster-$id)
     #  - $cluster should always be ceph
     #  - The --dmcrypt option will be available starting w/ Cuttlefish
-    Log.info("ceph-osd: Starting setup of osd_devices.")
     unless node["ceph"]["osd_devices"].nil?
       node["ceph"]["osd_devices"].each_with_index do |osd_device,index|
         if !osd_device["status"].nil?
-          Log.info("ceph-osd: osd_device #{osd_device} has already been setup.")
+          Log.info("ceph-osd: osd_device #{osd_device['device']} has already been setup.")
           next
         end
         dmcrypt = ""
