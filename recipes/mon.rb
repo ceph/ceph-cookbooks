@@ -90,9 +90,8 @@ get_mon_addresses().each do |addr|
   end
 end
 
-# The key is going to be automatically
-# created,
-# We store it when it is created
+# The osd and mds keys are going to be automatically created.
+# We store on the mon object when it is created
 ruby_block "get osd-bootstrap keyring" do
   block do
     run_out = ""
@@ -104,4 +103,16 @@ ruby_block "get osd-bootstrap keyring" do
     node.save
   end
   not_if { node['ceph']['bootstrap_osd_key'] }
+end
+ruby_block "get mds-bootstrap keyring" do
+  block do
+    run_out = ""
+    while run_out.empty?
+      run_out = Mixlib::ShellOut.new("ceph auth get-key client.bootstrap-mds").run_command.stdout.strip
+      sleep 2
+    end
+    node.override['ceph']['bootstrap_mds_key'] = run_out
+    node.save
+  end
+  not_if { node['ceph']['bootstrap_mds_key'] }
 end
