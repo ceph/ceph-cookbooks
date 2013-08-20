@@ -82,7 +82,7 @@ if !search(:node,"hostname:#{node['hostname']} AND dmcrypt:true").empty?
 end
 
 service_type = node["ceph"]["osd"]["init_style"]
-mons = get_mon_nodes("ceph_bootstrap_osd_key:*")
+mons = get_mon_nodes("bootstrap_osd_key:*")
 
 if mons.empty? then
   Log.info("ceph-osd: No ceph-mons found.")
