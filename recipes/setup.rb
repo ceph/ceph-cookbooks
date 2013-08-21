@@ -48,5 +48,3 @@ if node['ceph']['config']['mon_initial_members'].nil?
 else
   Log.info("ceph-setup: mon_initial_members is #{node['ceph']['config']['mon_initial_members']}")
 end
-
-include_recipe "ceph::default"
