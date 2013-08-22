@@ -152,21 +152,13 @@ else
           dmcrypt = "--dmcrypt"
         end
         Log.info("ceph-osd: creating osd on #{osd_device['device']}.")
-        execute "Creating Ceph OSD on #{osd_device['device']}" do
-          command "ceph-disk-prepare #{dmcrypt} #{osd_device['device']} #{osd_device['journal']}"
-          action :run
-          notifies :create, "ruby_block[save osd_device status]"
-        end
-        # we add this status to the node env
-        # so that we can implement recreate
-        # and/or delete functionalities in the
-        # future.
-        ruby_block "save osd_device status" do
-          block do
-            node.normal["ceph"]["osd_devices"][index]["status"] = "deployed"
-            node.save
-          end
-          action :nothing
+        deviceprep = Mixlib::ShellOut.new("ceph-disk-prepare #{dmcrypt} #{osd_device['device']} #{osd_device['journal']}").run_command
+        if deviceprep.error!
+          raise "ceph-osd: osd creation on #{osd_device['device']} failed!"
+        else
+          Log.info("ceph-osd: osd creation on #{osd_device['device']} succeeded.")
+          node.set["ceph"]["osd_devices"][index]["status"] = "deployed"
+          node.save
         end
       end
       service "ceph_osd" do
