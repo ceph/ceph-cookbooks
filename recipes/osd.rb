@@ -54,23 +54,26 @@ else
 end
 
 package 'gdisk' do
-  action :nothing
-end.run_action(:upgrade)
+  action :upgrade
+end
 
 # sometimes there are partitions on the disk that interfere with
 # ceph-disk-prepare, so let's make sure there's nothing on each candidate disk 
 if node["ceph"]["osd_autoprepare"] and !node["ceph"]["osd_devices"].nil?
   node["ceph"]["osd_devices"].each do |osd_device|
     if osd_device['status'].nil?
-      Log.info("ceph-osd: Erasing #{osd_device['device']} to prepare it as an osd")
-      devicewipe = Mixlib::ShellOut.new("sgdisk -oZ #{osd_device['device']}").run_command
-      if devicewipe.error!
-        raise "ceph-osd: erase of #{osd_device['device']} failed!"
+      ruby_block "ceph-osd: erase #{osd_device['device']} to prepare it as an osd" do
+        block do
+          devicewipe = Mixlib::ShellOut.new("sgdisk -oZ #{osd_device['device']}").run_command
+          if devicewipe.error!
+            raise "ceph-osd: erase of #{osd_device['device']} failed!"
+          end
+        end
       end
     elsif osd_device['status'] == 'deployed'
-      Log.info("ceph-osd: Not erasing #{osd_device['device']} as it has already been deployed.")
+      Log.debug("ceph-osd: Not erasing #{osd_device['device']} as it has already been deployed.")
     else
-      Log.info("ceph-osd: Not erasing #{osd_device['device']} as it has an unrecognised status.")
+      Log.debug("ceph-osd: Not erasing #{osd_device['device']} as it has an unrecognised status.")
     end
   end
 end
@@ -144,22 +147,26 @@ else
     unless node["ceph"]["osd_devices"].nil?
       node["ceph"]["osd_devices"].each_with_index do |osd_device,index|
         if !osd_device["status"].nil?
-          Log.info("ceph-osd: osd_device #{osd_device['device']} has already been setup.")
+          Log.debug("ceph-osd: osd_device #{osd_device['device']} has already been prepared.")
           next
         end
         dmcrypt = ""
         if osd_device["encrypted"] == true
           dmcrypt = "--dmcrypt"
         end
-        Log.info("ceph-osd: creating osd on #{osd_device['device']}.")
-        deviceprep = Mixlib::ShellOut.new("ceph-disk-prepare #{dmcrypt} #{osd_device['device']} #{osd_device['journal']}").run_command
-        if deviceprep.error!
-          raise "ceph-osd: osd creation on #{osd_device['device']} failed!"
-        else
-          Log.info("ceph-osd: osd creation on #{osd_device['device']} succeeded.")
-          node.set["ceph"]["osd_devices"][index]["status"] = "deployed"
-          node.save
+
+        ruby_block "ceph-osd: create osd on #{osd_device['device']}" do
+          block do
+            deviceprep = Mixlib::ShellOut.new("ceph-disk-prepare #{dmcrypt} #{osd_device['device']} #{osd_device['journal']}").run_command
+            if deviceprep.error!
+              raise "ceph-osd: osd creation on #{osd_device['device']} failed!"
+            else
+              node.set["ceph"]["osd_devices"][index]["status"] = "deployed"
+              node.save
+            end
+          end
         end
+
       end
       service "ceph_osd" do
         case service_type
