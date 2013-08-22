@@ -36,17 +36,17 @@ include_recipe "ceph::conf"
 
 if !node["ceph"]["osd_devices"].nil?
   node["ceph"]["osd_devices"].each do |osd_device|
-    Log.info("ceph-osd: #{osd_device}")
+    Log.debug("ceph-osd: #{osd_device}")
   end
 elsif node["ceph"]["osd_autoprepare"]
    # set node["ceph"]["osd_autoprepare"] to true to enable automated osd disk
    # discovery and preparation
    osd_devices = Array.new
    node['block_device'].select{|device,info| device =~ /^[hvs]d[^a]$/ and info['size'].to_i > 0}.each do |device,info|
-    Log.info("ceph-osd: Candidate Device /dev/#{device} found.")
+    Log.debug("ceph-osd: Candidate Device /dev/#{device} found.")
     osd_devices << {"device" => "/dev/#{device}"}
   end
-  Log.info("ceph-osd: New Candidates = #{osd_devices}")
+  Log.debug("ceph-osd: New Candidates = #{osd_devices}")
   node.set["ceph"]["osd_devices"] = osd_devices
   node.save
 else
@@ -88,7 +88,7 @@ service_type = node["ceph"]["osd"]["init_style"]
 mons = get_mon_nodes("bootstrap_osd_key:*")
 
 if mons.empty? then
-  Log.info("ceph-osd: No ceph-mons found.")
+  Log.warn("ceph-osd: No ceph osd bootstrap key found.")
 else
 
   directory "/var/lib/ceph/bootstrap-osd" do
@@ -100,7 +100,7 @@ else
   # TODO cluster name
   cluster = 'ceph'
 
-  execute "format as keyring" do
+  execute "create the local keyring file" do
     command "ceph-authtool '/var/lib/ceph/bootstrap-osd/#{cluster}.keyring' --create-keyring --name=client.bootstrap-osd --add-key='#{mons[0]["ceph"]["bootstrap_osd_key"]}'"
     creates "/var/lib/ceph/bootstrap-osd/#{cluster}.keyring"
   end
@@ -179,8 +179,6 @@ else
         action [ :enable, :start ]
         supports :restart => true
       end
-    else
-      Log.info('ceph-osd: No ceph osd_devices have been set.')
     end
   end
 end

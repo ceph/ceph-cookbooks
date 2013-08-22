@@ -30,21 +30,21 @@ end
 # desired.
 
 if node['ceph']['config']['fsid'].nil?
-  Log.info("ceph-setup: ceph fsid not set - generating a new fsid")
+  Log.debug("ceph-setup: ceph fsid not set - generating a new fsid")
   require 'securerandom'
   fsid = SecureRandom.uuid
   node.set['ceph']['config']['fsid'] = fsid
   node.save
-  Log.info("ceph-setup: ceph fsid has been set to #{fsid}")
+  Log.debug("ceph-setup: ceph fsid has been set to #{fsid}")
 else
-  Log.info("ceph-setup: ceph fsid is #{node['ceph']['config']['fsid']}")
+  Log.debug("ceph-setup: ceph fsid is #{node['ceph']['config']['fsid']}")
 end
 
 if node['ceph']['config']['mon_initial_members'].nil?
-  Log.info("ceph-setup: mon_initial_members not set - using the ceph-setup node")
+  Log.debug("ceph-setup: mon_initial_members not set - using the ceph-setup node")
   node.set['ceph']['config']['mon_initial_members'] = node['hostname']
   node.save
-  Log.info("ceph-setup: mon_initial_members has been set to #{node['hostname']}")
+  Log.debug("ceph-setup: mon_initial_members has been set to #{node['hostname']}")
 else
-  Log.info("ceph-setup: mon_initial_members is #{node['ceph']['config']['mon_initial_members']}")
+  Log.debug("ceph-setup: mon_initial_members is #{node['ceph']['config']['mon_initial_members']}")
 end

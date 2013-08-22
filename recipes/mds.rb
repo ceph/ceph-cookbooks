@@ -31,7 +31,7 @@ service_type = node["ceph"]["mds"]["init_style"]
 mons = get_mon_nodes("bootstrap_mds_key:*")
 
 if mons.empty? then
-  Log.info("ceph-mds: No ceph mds bootstrap key found.")
+  Log.warn("ceph-mds: No ceph mds bootstrap key found.")
 else
   mds_bootstrap_directory = "/var/lib/ceph/bootstrap-mds"
 
