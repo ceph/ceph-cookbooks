@@ -101,7 +101,7 @@ end
 
 # The key is going to be automatically
 # created,
-# The key is going to be automatically # created, We store it when it is created
+# The key is going to be automatically created, We store it when it is created
 # If we're storing keys in encrypted data bags, then they've already been generated above
 # Skip key generation if cephx is explicitly disabled.
 unless node['ceph']['encrypted_data_bags'] ||
