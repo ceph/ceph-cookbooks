@@ -44,7 +44,16 @@ package 'cryptsetup' do
 end
 
 service_type = node['ceph']['osd']['init_style']
-mons = node['ceph']['encrypted_data_bags'] ? get_mon_nodes : get_mon_nodes('ceph_bootstrap_osd_key:*')
+# Look for monitors with osd bootstrap keys.
+# If we're storing keys in encrypted data bags, then we'll have to trust the roles
+# If cephx is explicitly disabled, then we don't need the bootstrap keys.
+unless node['ceph']['encrypted_data_bags'] ||
+       node['ceph']['config']['global']['auth cluster required'] == "none"
+   then
+  mons = get_mon_nodes( 'ceph_bootstrap_osd_key:*')
+else
+  mons = get_mon_nodes()
+end
 
 return 'No ceph-mon found.' if mons.empty?
 
