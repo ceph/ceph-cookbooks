@@ -46,10 +46,7 @@ end
 service_type = node['ceph']['osd']['init_style']
 # Look for monitors with osd bootstrap keys.
 # If we're storing keys in encrypted data bags, then we'll have to trust the roles
-# If cephx is explicitly disabled, then we don't need the bootstrap keys.
-unless node['ceph']['encrypted_data_bags'] ||
-       node['ceph']['config']['global']['auth cluster required'] == "none"
-   then
+if use_cephx? && !node['ceph']['encrypted_data_bags'] then
   mons = get_mon_nodes( 'ceph_bootstrap_osd_key:*')
 else
   mons = get_mon_nodes()

@@ -101,3 +101,17 @@ def quorum?
   state = JSON.parse(cmd.stdout)['state']
   QUORUM_STATES.include?(state)
 end
+
+# Cephx is on by default, but users can disable it.
+# type can be one of 3 values: cluster, service, or client.  If the value is none of the above, set it to cluster
+def use_cephx?( type=nil)
+    # Verify type is valid
+    if ['cluster','service','client'].index(type).nil? then
+      type = 'cluster';
+    end
+
+    # CephX is enabled if it's not configured at all, or explicity enabled
+    return node["ceph"]["config"].nil? ||
+           node["ceph"]["config"]["global"].nil? ||
+           node["ceph"]["config"]["global"]["auth #{type} required"] == "cephx"
+end
