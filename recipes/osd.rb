@@ -114,7 +114,7 @@ else
     unless node["ceph"]["osd_devices"].nil?
       devices = node["ceph"]["osd_devices"]
       unless devices.is_a? Hash
-        devices = Hash[(0..devices.size).zip devices]
+        devices = Hash[(0...devices.size).zip devices]
       end
        
       devices.each do |index,osd_device|
