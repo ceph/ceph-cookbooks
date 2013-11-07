@@ -113,7 +113,7 @@ else
     #  - The --dmcrypt option will be available starting w/ Cuttlefish
     unless node["ceph"]["osd_devices"].nil?
       devices = node["ceph"]["osd_devices"]
-      unless devices.is_a Hash
+      unless devices.is_a? Hash
         devices = Hash[(0..devices.size).zip devices]
       end
        
