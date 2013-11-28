@@ -12,7 +12,7 @@ when "rhel"
 end
 
 branch = node['ceph']['branch']
-if branch == "dev" and platform_family != "centos" and platform_family != "fedora"
+if branch == "dev" and platform_family != "rhel" and platform_family != "fedora"
   raise "Dev branch for #{platform_family} is not yet supported"
 end
 
