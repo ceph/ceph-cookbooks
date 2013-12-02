@@ -119,3 +119,21 @@ def have_quorum?()
     state = JSON.parse(mon_status)['state']
     return QUORUM_STATES.include?(state)
 end
+
+def validate_fsid(fsid)
+  begin
+    fsid_down = fsid.downcase
+  rescue
+    Chef::Application.fatal!('fsid must be a UUID string.')
+  end
+  pattern = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/
+  mtch = pattern.match(fsid)
+  if mtch
+    return fsid
+  end
+  mtch = pattern.match(fsid_down)
+  if mtch
+    Chef::Application.fatal!('fsid must be lowercase.')
+  end
+  Chef::Application.fatal!('fsid must be a UUID string.')
+end

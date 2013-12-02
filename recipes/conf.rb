@@ -1,4 +1,4 @@
-raise "fsid must be set in config" if node["ceph"]["config"]['fsid'].nil?
+validate_fsid node['ceph']['config']['fsid']
 raise "mon_initial_members must be set in config" if node["ceph"]["config"]['mon_initial_members'].nil?
 
 mon_addresses = get_mon_addresses()
