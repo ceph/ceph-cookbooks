@@ -43,11 +43,11 @@ end
 
 include_recipe "ceph::conf"
 
-unless File.exists?("/var/lib/ceph/radosgw/ceph-radosgw.#{node['hostname']}/done")
-  if node["ceph"]["radosgw"]["webserver_companion"]
-    include_recipe "ceph::radosgw_#{node["ceph"]["radosgw"]["webserver_companion"]}"
-  end
+if node["ceph"]["radosgw"]["webserver_companion"]
+  include_recipe "ceph::radosgw_#{node["ceph"]["radosgw"]["webserver_companion"]}"
+end
 
+unless File.exists?("/var/lib/ceph/radosgw/ceph-radosgw.#{node['hostname']}/done")
   ruby_block "create rados gateway client key" do
     block do
       keyring = %x[ ceph auth get-or-create client.radosgw.#{node['hostname']} osd 'allow rwx' mon 'allow rw' --name mon. --key='#{node["ceph"]["monitor-secret"]}' ]
