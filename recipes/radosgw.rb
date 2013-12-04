@@ -20,7 +20,7 @@
 case node['platform_family']
 when "debian"
   packages = %w{
-    radosgw
+    radosgw libnss3-tools
   }
 
   if node['ceph']['install_debug']
@@ -31,7 +31,7 @@ when "debian"
   end
 when "rhel","fedora","suse"
   packages = %w{
-    ceph-radosgw
+    ceph-radosgw nss-tools
   }
 end
 
@@ -42,6 +42,33 @@ packages.each do |pkg|
 end
 
 include_recipe "ceph::conf"
+
+if !(node["ceph"]["radosgw"]["keystone_ca"].nil? || node["ceph"]["radosgw"]["keystone_signing"].nil? || node["ceph"]["config"]["rgw"]["nss db path"].nil?)
+  directory "#{node['ceph']['config']['rgw']['nss db path']}" do
+    owner "root"
+    group "root"
+    mode 0755
+    recursive true
+    action :create
+  end
+  unless (File.exists?("#{node['ceph']['config']['rgw']['nss db path']}/cert8.db") && File.exists?("#{node['ceph']['config']['rgw']['nss db path']}/key3.db") && File.exists?("#{node['ceph']['config']['rgw']['nss db path']}/secmod.db"))
+    execute "keystone-ca certutil" do
+      command "openssl x509 -in #{node['ceph']['radosgw']['keystone_ca']} -pubkey | certutil -d #{node['ceph']['config']['rgw']['nss db path']} -A -n ca -t 'TCu,Cu,Tuw'"
+    end
+    execute "keystone-signing certutil" do
+      command "openssl x509 -in #{node['ceph']['radosgw']['keystone_signing']} -pubkey | certutil -A -d #{node['ceph']['config']['rgw']['nss db path']} -n signing_cert -t 'P,P,P'"
+    end
+  end
+  file "#{node['ceph']['config']['rgw']['nss db path']}/cert8.db" do
+    owner node['ceph']['radosgw']['process_owner']
+  end
+  file "#{node['ceph']['config']['rgw']['nss db path']}/key3.db" do
+    owner node['ceph']['radosgw']['process_owner']
+  end
+  file "#{node['ceph']['config']['rgw']['nss db path']}/secmod.db" do
+    owner node['ceph']['radosgw']['process_owner']
+  end
+end
 
 unless File.exists?("/var/lib/ceph/radosgw/ceph-radosgw.#{node['hostname']}/done")
   if node["ceph"]["radosgw"]["webserver_companion"]
