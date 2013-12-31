@@ -13,7 +13,7 @@ def get_mon_nodes(extra_search=nil)
       search_string = "(#{search_string}) AND ceph_config_environment:#{node['ceph']['config']['environment']}"
     end
   else
-    search_string = "role:ceph-mon AND chef_environment:#{node.chef_environment}"
+    search_string = "run_list:recipe\\[ceph\\:\\:mon\\] AND chef_environment:#{node.chef_environment}"
   end
 
   if not extra_search.nil?
@@ -73,7 +73,7 @@ def get_mon_addresses()
     # make sure if this node runs ceph-mon, it's always included even if
     # search is laggy; put it first in the hopes that clients will talk
     # primarily to local node
-    if node['roles'].include? 'ceph-mon'
+    if node.recipe?('ceph::mon')
       mons << node
     end
 
