@@ -30,13 +30,10 @@ directory "/var/lib/ceph/mds/#{cluster}-#{node["hostname"]}" do
   action :create
 end
 
-ruby_block "create mds client key" do
-  block do
-    keyring = %x[ ceph auth get-or-create mds.#{node['hostname']} osd 'allow *' mon 'allow rwx' --name mon. --key='#{node["ceph"]["monitor-secret"]}' ]
-    keyfile = File.new("/var/lib/ceph/mds/#{cluster}-#{node['hostname']}/keyring", "w")
-    keyfile.puts(keyring)
-    keyfile.close
-  end
+ceph_client "mds" do
+  caps ({"osd"=>"allow *", "mon"=>"allow rwx"})
+  keyname "mds.#{node['hostname']}"
+  filename "/var/lib/ceph/mds/#{cluster}-#{node['hostname']}/keyring"
 end
 
 file "/var/lib/ceph/mds/#{cluster}-#{node["hostname"]}/done" do
