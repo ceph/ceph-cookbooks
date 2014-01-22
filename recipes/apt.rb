@@ -10,6 +10,14 @@ apt_repository "ceph-#{branch}" do
   key node['ceph']['debian'][branch]['repository_key']
 end
 
+apt_repository "ceph-extras" do
+  repo_name "ceph-extras"
+  uri 'http://ceph.com/packages/ceph-extras/debian'
+  distribution node['lsb']['codename']
+  components ['main']
+  key node['ceph']['debian'][branch]['repository_key']
+end
+
 if node['roles'].include?("ceph-radosgw") \
  && node["ceph"]["radosgw"]["webserver_companion"] == "apache2" \
  && node["ceph"]["radosgw"]["use_apache_fork"] == true
