@@ -158,6 +158,15 @@ else
         action [ :enable, :start ]
         supports :restart => true
       end
+      if node['ceph']['crush_location'].nil?
+        location = 'root=default'
+      elsif
+        location = node['ceph']['crush_location']
+      end
+      execute 'move host in CRUSH map' do
+        command "ceph osd crush move #{node['hostname']} #{location}"
+        action :run
+      end
     else
       Log.info('node["ceph"]["osd_devices"] empty')
     end
