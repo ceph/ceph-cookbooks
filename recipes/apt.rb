@@ -6,7 +6,7 @@ branch = node['ceph']['branch']
 apt_repository "ceph" do
   repo_name "ceph"
   uri node['ceph']['debian'][branch]['repository']
-  distribution node['lsb']['codename'] == "jessie" ? "sid" : node['lsb']['codename']
+  distribution node['lsb']['codename'] == "jessie" ? "wheezy" : node['lsb']['codename']
   components ['main']
   key node['ceph']['debian'][branch]['repository_key']
 end
