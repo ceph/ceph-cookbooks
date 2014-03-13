@@ -32,7 +32,7 @@ def find_node_ip_in_network(network, nodeish = nil)
   nodeish = node unless nodeish
   net = IPAddr.new(network)
   nodeish["network"]["interfaces"].each do |iface, addrs|
-    addrs["addresses"].each do |ip, params|
+    (addrs["addresses"] || []).each do |ip, params|
       if params['family'].eql?("inet6") && net.include?(ip)
         return "[#{ip}]:6789"
       elsif params['family'].eql?("inet") && net.include?(ip)
