@@ -72,7 +72,7 @@ def auth_set_key(keyname, caps)
   if get_or_create.stderr.scan(/EINVAL.*but cap.*does not match/)
     Chef::Log.info("Deleting old key with incorrect caps")
     # delete an old key if it exists and is wrong
-    Mixlib::ShellOut.new("ceph auth del #{keyname}").run_command
+    get_or_create = Mixlib::ShellOut.new("ceph auth del #{keyname}").run_command
     # try to create again
     get_or_create.run_command
   end
