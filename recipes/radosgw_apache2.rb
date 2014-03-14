@@ -19,15 +19,15 @@
 
 case node['platform_family']
 when "debian", "suse"
-  packages = %w{
+  packages = %w(
     apache2
     libapache2-mod-fastcgi
-  }
+  )
 when "rhel", "fedora"
-  packages = %w{
+  packages = %w(
     httpd
     mod_fastcgi
-  }
+  )
 end
 
 packages.each do |pkg|
@@ -47,10 +47,10 @@ if node['platform_family'] == "rhel"
   d_owner = d_group = "apache"
 end
 
-%W{ /var/run/ceph
+%W( /var/run/ceph
     /var/lib/ceph/radosgw/ceph-radosgw.#{node['hostname']}
     /var/lib/apache2/
-}.each do |dir|
+).each do |dir|
   directory dir do
     owner d_owner
     group d_group

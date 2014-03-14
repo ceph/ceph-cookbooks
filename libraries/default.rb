@@ -46,7 +46,7 @@ end
 def mon_addresses
   mon_ips = []
 
-  if File.exists?("/var/run/ceph/ceph-mon.#{node['hostname']}.asok")
+  if File.exist?("/var/run/ceph/ceph-mon.#{node['hostname']}.asok")
     mon_ips = quorum_members_ips
   else
     mons = []

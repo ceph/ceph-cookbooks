@@ -40,7 +40,7 @@ end
 # TODO: cluster name
 cluster = 'ceph'
 
-unless File.exists?("/var/lib/ceph/mon/ceph-#{node["hostname"]}/done")
+unless File.exist?("/var/lib/ceph/mon/ceph-#{node["hostname"]}/done")
   keyring = "#{Chef::Config[:file_cache_path]}/#{cluster}-#{node['hostname']}.mon.keyring"
 
   if node['ceph']['encrypted_data_bags']

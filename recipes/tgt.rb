@@ -21,13 +21,13 @@ node.default['ceph']['extras_repo'] = true
 
 case node['platform_family']
 when "debian"
-  packages = %w{
+  packages = %w(
     tgt
-  }
+  )
 when "rhel", "fedora"
-  packages = %w{
+  packages = %w(
     scsi-target-utils
-  }
+  )
 end
 
 packages.each do |pkg|
