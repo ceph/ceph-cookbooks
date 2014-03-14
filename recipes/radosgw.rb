@@ -21,20 +21,20 @@ node.default['ceph']['is_radosgw'] = true
 
 case node['platform_family']
 when "debian"
-  packages = %w{
+  packages = %w(
     radosgw
-  }
+  )
 
   if node['ceph']['install_debug']
-    packages_dbg = %w{
+    packages_dbg = %w(
       radosgw-dbg
-    }
+    )
     packages += packages_dbg
   end
 when "rhel", "fedora", "suse"
-  packages = %w{
+  packages = %w(
     ceph-radosgw
-  }
+  )
 end
 
 packages.each do |pkg|
