@@ -109,7 +109,7 @@ def use_cephx?(type = nil)
   type = 'cluster' if %w(cluster service client).index(type).nil?
 
   # CephX is enabled if it's not configured at all, or explicity enabled
-  node["ceph"]["config"].nil? ||
-    node["ceph"]["config"]["global"].nil? ||
-    node["ceph"]["config"]["global"]["auth #{type} required"] == "cephx"
+  node['ceph']['config'].nil? ||
+    node['ceph']['config']['global'].nil? ||
+    node['ceph']['config']['global']["auth #{type} required"] == 'cephx'
 end
