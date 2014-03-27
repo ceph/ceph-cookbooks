@@ -53,6 +53,10 @@ if !::File.exists?("/var/lib/ceph/radosgw/ceph-radosgw.#{node['hostname']}/done"
   ceph_client 'radosgw' do
     caps('mon' => 'allow rw', 'osd' => 'allow rwx')
   end
+  ceph_client 'radosgw' do
+    filename "/var/lib/ceph/radosgw/ceph-radosgw.#{node['hostname']}/keyring"
+    caps('mon' => 'allow rw', 'osd' => 'allow rwx')
+  end
 
   file "/var/lib/ceph/radosgw/ceph-radosgw.#{node['hostname']}/done" do
     action :create
