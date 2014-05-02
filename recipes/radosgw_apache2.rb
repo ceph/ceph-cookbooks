@@ -50,6 +50,7 @@ end
 %W(/var/run/ceph
    /var/lib/ceph/radosgw/ceph-radosgw.#{node['hostname']}
    /var/lib/apache2/
+   /var/log/radosgw/
 ).each do |dir|
   directory dir do
     owner d_owner
