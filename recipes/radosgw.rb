@@ -19,6 +19,9 @@
 
 node.default['ceph']['is_radosgw'] = true
 
+include_recipe 'ceph::_common'
+include_recipe 'ceph::conf'
+
 case node['platform_family']
 when 'debian'
   packages = %w(
@@ -42,8 +45,6 @@ packages.each do |pkg|
     action :upgrade
   end
 end
-
-include_recipe 'ceph::conf'
 
 if !::File.exist?("/var/lib/ceph/radosgw/ceph-radosgw.#{node['hostname']}/done")
   if node['ceph']['radosgw']['webserver_companion']
