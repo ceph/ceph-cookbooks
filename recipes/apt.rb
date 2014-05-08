@@ -26,8 +26,7 @@ apt_repository 'ceph-extras' do
   only_if { node['ceph']['extras_repo'] }
 end
 
-if node['ceph']['is_radosgw'] \
- && node['ceph']['radosgw']['webserver_companion'] == 'apache2' \
+if node['ceph']['radosgw']['webserver_companion'] == 'apache2' \
  && node['ceph']['radosgw']['use_apache_fork'] == true
   case node['lsb']['codename']
   when 'precise', 'oneiric'
