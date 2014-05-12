@@ -24,12 +24,14 @@ when 'debian'
   packages = %w(
     ceph
     ceph-common
+    ceph-mds
   )
 
   if node['ceph']['install_debug']
     packages_dbg = %w(
       ceph-dbg
       ceph-common-dbg
+      ceph-mds-dbg
     )
     packages += packages_dbg
   end
