@@ -26,11 +26,10 @@ apt_repository 'ceph-extras' do
   only_if { node['ceph']['extras_repo'] }
 end
 
-if node['ceph']['is_radosgw'] \
- && node['ceph']['radosgw']['webserver_companion'] == 'apache2' \
+if node['ceph']['radosgw']['webserver_companion'] == 'apache2' \
  && node['ceph']['radosgw']['use_apache_fork'] == true
   case node['lsb']['codename']
-  when 'precise', 'oneiric'
+  when 'precise', 'squeeze', 'wheezy'
     apt_repository 'ceph-apache2' do
       repo_name 'ceph-apache2'
       uri "http://gitbuilder.ceph.com/apache2-deb-#{node['lsb']['codename']}-x86_64-basic/ref/master"
