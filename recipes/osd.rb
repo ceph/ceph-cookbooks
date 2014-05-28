@@ -31,6 +31,8 @@
 #   }
 # ]
 
+fail 'fsid must be set in config' if node['ceph']['config']['fsid'].nil?
+
 include_recipe 'ceph::_common'
 include_recipe 'ceph::osd_install'
 include_recipe 'ceph::conf'
