@@ -14,6 +14,9 @@
 #  different and are created in
 #  /var/lib/ceph/bootstrap-{osd,mds}/ceph.keyring
 
+fail 'fsid must be set in config' if node['ceph']['config']['fsid'].nil?
+fail 'mon_initial_members must be set in config' if node['ceph']['config']['mon_initial_members'].nil?
+
 node.default['ceph']['is_mon'] = true
 
 include_recipe 'ceph::_common'
