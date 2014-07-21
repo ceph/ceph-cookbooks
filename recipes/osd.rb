@@ -44,8 +44,6 @@ package 'cryptsetup' do
   only_if { node['dmcrypt'] }
 end
 
-service_type = node['ceph']['osd']['init_style']
-
 directory '/var/lib/ceph/bootstrap-osd' do
   owner 'root'
   group 'root'
@@ -134,13 +132,7 @@ else
       end
     end
     service 'ceph_osd' do
-      case service_type
-      when 'upstart'
-        service_name 'ceph-osd-all-starter'
-        provider Chef::Provider::Service::Upstart
-      else
-        service_name 'ceph'
-      end
+      service_name node['ceph']['osd']['service_name']
       action [:enable, :start]
       supports :restart => true
     end

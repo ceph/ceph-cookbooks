@@ -43,28 +43,15 @@ file "/var/lib/ceph/mds/#{cluster}-#{node['hostname']}/done" do
   mode 00644
 end
 
-service_type = node['ceph']['osd']['init_style']
-
-case service_type
-when 'upstart'
-  filename = 'upstart'
-else
-  filename = 'sysvinit'
-end
-file "/var/lib/ceph/mds/#{cluster}-#{node['hostname']}/#{filename}" do
+service_type = node['ceph']['mds']['init_style']
+file "/var/lib/ceph/mds/#{cluster}-#{node['hostname']}/#{service_type}" do
   owner 'root'
   group 'root'
   mode 00644
 end
 
 service 'ceph_mds' do
-  case service_type
-  when 'upstart'
-    service_name 'ceph-mds-all-starter'
-    provider Chef::Provider::Service::Upstart
-  else
-    service_name 'ceph'
-  end
+  service_name node['ceph']['mds']['service_name']
   action [:enable, :start]
   supports :restart => true
 end

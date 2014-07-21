@@ -81,26 +81,18 @@ unless File.exist?("/var/lib/ceph/mon/ceph-#{node['hostname']}/done")
   end
 end
 
-if service_type == 'upstart'
+if node['platform'] == 'ubuntu'
   service 'ceph-mon' do
-    provider Chef::Provider::Service::Upstart
     action :enable
   end
   service 'ceph-mon-all' do
-    provider Chef::Provider::Service::Upstart
     supports :status => true
     action [:enable, :start]
   end
 end
 
 service 'ceph_mon' do
-  case service_type
-  when 'upstart'
-    service_name 'ceph-mon-all-starter'
-    provider Chef::Provider::Service::Upstart
-  else
-    service_name 'ceph'
-  end
+  service_name node['ceph']['mon']['service_name']
   supports :restart => true, :status => true
   action [:enable, :start]
 end

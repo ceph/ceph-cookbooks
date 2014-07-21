@@ -1,6 +1,10 @@
 include_attribute 'ceph'
 
 default['ceph']['mon']['init_style'] = node['ceph']['init_style']
+default['ceph']['mon']['service_name'] = value_for_platform(
+  ['ubuntu'] => 'ceph-mon-all-starter',
+  'default' => 'ceph'
+)
 
 default['ceph']['mon']['secret_file'] = '/etc/chef/secrets/ceph_mon'
 

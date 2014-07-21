@@ -25,7 +25,12 @@ default['ceph']['radosgw']['rgw_addr'] = '*:80'
 default['ceph']['radosgw']['rgw_port'] = false
 default['ceph']['radosgw']['webserver_companion'] = 'apache2' # can be false
 default['ceph']['radosgw']['use_apache_fork'] = true
-default['ceph']['radosgw']['init_style'] = node['ceph']['init_style']
+
+default['ceph']['radosgw']['service_name'] = value_for_platform(
+  ['ubuntu'] => 'radosgw-all-starter',
+  ['debian'] => 'radosgw',
+  'default' => 'ceph-radosgw'
+)
 
 case node['platform_family']
 when 'debian'

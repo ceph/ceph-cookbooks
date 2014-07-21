@@ -1,6 +1,9 @@
 include_attribute 'ceph'
 
-default['ceph']['osd']['init_style'] = node['ceph']['init_style']
+default['ceph']['osd']['service_name'] = value_for_platform(
+  ['ubuntu'] => 'ceph-osd-all-starter',
+  'default' => 'ceph'
+)
 
 default['ceph']['osd']['secret_file'] = '/etc/chef/secrets/ceph_osd'
 

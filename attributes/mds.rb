@@ -1,6 +1,10 @@
 include_attribute 'ceph'
 
-default['ceph']['mds']['init_style'] = node['init_style']
+default['ceph']['mds']['init_style'] = node['ceph']['init_style']
+default['ceph']['mds']['service_name'] = value_for_platform(
+  ['ubuntu'] => 'ceph-mds-all-starter',
+  'default' => 'ceph'
+)
 
 case node['platform_family']
 when 'debian'
