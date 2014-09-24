@@ -57,6 +57,11 @@ if !::File.exist?("/var/lib/ceph/radosgw/ceph-radosgw.#{node['hostname']}/done")
   directory "/var/lib/ceph/radosgw/ceph-radosgw.#{node['hostname']}" do
     recursive true
   end
+  ceph_client 'radosgw keyring' do
+    keyname "client.radosgw.#{node['hostname']}"
+    filename "/var/lib/ceph/radosgw/ceph-radosgw.#{node['hostname']}/keyring"
+    caps('mon' => 'allow rw', 'osd' => 'allow rwx')
+  end
 
   file "/var/lib/ceph/radosgw/ceph-radosgw.#{node['hostname']}/done" do
     action :create
