@@ -27,8 +27,10 @@ default['ceph']['radosgw']['webserver_companion'] = 'apache2' # can be false
 default['ceph']['radosgw']['use_apache_fork'] = true
 default['ceph']['radosgw']['init_style'] = node['ceph']['init_style']
 
-default['ceph']['radosgw']['path'] = '/var/www'
+default['ceph']['radosgw']['default'] = true   # whether to deploy the default radosgw
+default['ceph']['radosgw']['instances'] = {}   # map from zone name to settings
 
+default['ceph']['radosgw']['path'] = '/var/www'
 if node['platform_family'] == 'suse'
   default['ceph']['radosgw']['path'] = '/srv/www/ceph-radosgw'
 end

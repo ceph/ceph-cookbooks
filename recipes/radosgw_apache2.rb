@@ -65,7 +65,24 @@ web_app 'rgw' do
   template 'rgw.conf.erb'
   server_name node['ceph']['radosgw']['api_fqdn']
   admin_email node['ceph']['radosgw']['admin_email']
-  ceph_rgw_addr node['ceph']['radosgw']['rgw_addr']
+  rgw_addr node['ceph']['radosgw']['rgw_addr']
+  api_aliases node['ceph']['radosgw']['api_aliases']
+  socket "/var/run/ceph-radosgw/radosgw.#{ node['hostname']}"
+  only_if { node['ceph']['radosgw']['default'] }
+end
+
+node['ceph']['radosgw']['instances'].sort.each do |keyname, instance|
+  Chef::Log.info("Applying radosgw apache vhost #{keyname}")
+  zone = instance['rgw zone']
+  web_app "rgw-#{zone}" do
+    template 'rgw.conf.erb'
+    server_name instance['rgw dns name']
+    admin_email node['ceph']['radosgw']['admin_email']
+    rgw_addr node['ceph']['radosgw']['rgw_addr']
+    api_aliases instance['api_aliases']
+    socket instance['rgw socket path']
+    zone instance['rgw zone']
+  end
 end
 
 directory node['ceph']['radosgw']['path'] do

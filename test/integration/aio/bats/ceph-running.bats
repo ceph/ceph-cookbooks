@@ -17,3 +17,6 @@
 @test "apache is running and listening" {
   netstat -ln | grep -E '^\S+\s+\S+\s+\S+\s+\S+:80\s+'
 }
+@test "apache responds" {
+  wget http://localhost --header=host:localhost -O- | grep ListAllMyBucketsResult > /dev/null
+}

@@ -63,5 +63,7 @@ suites:
         - { device: "/dev/sdc" }
         - { device: "/dev/sdd" }
   run_list:
+    - recipe[ceph_test::radosgw_zone]
     - recipe[ceph::all_in_one]
     - recipe[ceph_test::cephfs]
+    - recipe[ceph_test::radosgw_restart]

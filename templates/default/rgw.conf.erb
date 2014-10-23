@@ -1,16 +1,17 @@
+<% fcgi = "/s3gw#{ "-#{@params[:zone]}" if @params[:zone] }.fcgi" -%>
 <% if node['ceph']['radosgw']['rgw_port'] -%>
-FastCgiExternalServer <%= node['ceph']['radosgw']['path'] %>/s3gw.fcgi -host 127.0.0.1:<%= node['ceph']['radosgw']['rgw_port'] %>
+FastCgiExternalServer <%= node['ceph']['radosgw']['path'] %><%= fcgi %> -host 127.0.0.1:<%= node['ceph']['radosgw']['rgw_port'] %>
 <% else -%>
-FastCgiExternalServer <%= node['ceph']['radosgw']['path'] %>/s3gw.fcgi -socket /var/run/ceph-radosgw/radosgw.<%= node['hostname'] %>
+FastCgiExternalServer <%= node['ceph']['radosgw']['path'] %><%= fcgi %> -socket <%= @params[:socket] %>
 <% end -%>
 
 LogFormat "%{X-Forwarded-For}i %l %u %t \"%r\" %>s %O \"%{Referer}i\" \"%{User-Agent}i\" \"%{Host}i\"" proxy_combined
 LogFormat "%{X-Forwarded-For}i %h %l %u %t \"%r\" %>s %O \"%{Referer}i\" \"%{User-Agent}i\" \"%{Host}i\"" proxy_debug
 
-<VirtualHost <%= node['ceph']['radosgw']['rgw_addr'] %>>
+<VirtualHost <%= @params[:rgw_addr] %>>
   ServerName <%= @params[:server_name] %>
-<% if node['ceph']['radosgw']['api_aliases'] -%>
-<%   node['ceph']['radosgw']['api_aliases'].each do |api_alias| -%>
+<% if @params[:api_aliases] -%>
+<%   @params[:api_aliases].each do |api_alias| -%>
   ServerAlias <%= api_alias %>
 <%   end -%>
 <% end -%>
@@ -18,7 +19,7 @@ LogFormat "%{X-Forwarded-For}i %h %l %u %t \"%r\" %>s %O \"%{Referer}i\" \"%{Use
   DocumentRoot <%= node['ceph']['radosgw']['path'] %>
 
   RewriteEngine On
-  RewriteRule ^/([a-zA-Z0-9-_.]*)([/]?.*) /s3gw.fcgi?page=$1&params=$2&%{QUERY_STRING} [E=HTTP_AUTHORIZATION:%{HTTP:Authorization},L]
+  RewriteRule ^/([a-zA-Z0-9-_.]*)([/]?.*) <%= fcgi %>?page=$1&params=$2&%{QUERY_STRING} [E=HTTP_AUTHORIZATION:%{HTTP:Authorization},L]
 
   <IfModule mod_fastcgi.c>
     <Directory <%= node['ceph']['radosgw']['path'] %>>

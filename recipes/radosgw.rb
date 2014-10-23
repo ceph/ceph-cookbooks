@@ -46,24 +46,47 @@ if node['ceph']['radosgw']['webserver_companion']
   include_recipe "ceph::radosgw_#{node['ceph']['radosgw']['webserver_companion']}"
 end
 
-ceph_client 'radosgw' do
-  caps('mon' => 'allow rw', 'osd' => 'allow rwx')
-  owner 'root'
-  group node['apache']['group']
-  mode 0640
+if node['ceph']['radosgw']['default']
+  ceph_client 'radosgw' do
+    caps('mon' => 'allow rw', 'osd' => 'allow rwx')
+    owner 'root'
+    group node['apache']['group']
+    mode 0640
+  end
+
+  directory "/var/lib/ceph/radosgw/ceph-radosgw.#{node['hostname']}" do
+    recursive true
+    only_if { node['platform'] == 'ubuntu' }
+  end
+
+  # needed by https://github.com/ceph/ceph/blob/master/src/upstart/radosgw-all-starter.conf
+  file "/var/lib/ceph/radosgw/ceph-radosgw.#{node['hostname']}/done" do
+    action :create
+    only_if { node['platform'] == 'ubuntu' }
+  end
 end
 
-directory "/var/lib/ceph/radosgw/ceph-radosgw.#{node['hostname']}" do
-  recursive true
-  only_if { node['platform'] == 'ubuntu' }
+::Chef::Log.info("Found radosgw instances #{node['ceph']['radosgw']['instances'].keys}")
+node['ceph']['radosgw']['instances'].sort.each do |keyname, instance|
+  ceph_client "radosgw.#{keyname}" do
+    keyname keyname
+    filename instance['keyring']
+    caps('mon' => 'allow rw', 'osd' => 'allow rwx')
+  end
+
+  keyid = keyname.sub(/^client\./, '')
+
+  # sets the init script to start this instance
+  directory "/var/lib/ceph/radosgw/ceph-#{keyid}" do
+    recursive true
+  end
+
+  file "/var/lib/ceph/radosgw/ceph-#{keyid}/done" do
+    action :create
+  end
 end
 
-# needed by https://github.com/ceph/ceph/blob/master/src/upstart/radosgw-all-starter.conf
-file "/var/lib/ceph/radosgw/ceph-radosgw.#{node['hostname']}/done" do
-  action :create
-  only_if { node['platform'] == 'ubuntu' }
-end
-
+# sysvinit script fails to start instances that don't have rgw pools set up
 service 'radosgw' do
   case node['ceph']['radosgw']['init_style']
   when 'upstart'

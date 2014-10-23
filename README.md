@@ -169,6 +169,27 @@ The ceph\_cephfs LWRP provides an easy way to mount CephFS. It will automaticall
 - :use\_fuse - whether to use ceph-fuse or the kernel client to mount the filesystem. ceph-fuse is updated more often, but the kernel client allows for subdirectory mounting. Defaults to true
 - :cephfs\_subdir - which CephFS subdirectory to mount. Defaults to '/'. An exception will be thrown if this option is set to anything other than '/' if use\_fuse is also true
 
+### ceph\_radosgw
+
+The ceph\_radosgw LWRP provides an easy way to setup customized radosgw servers. The LWRP itself just adds a node attribute, and then the radosgw recipe does all the setup. Due to the way Chef processes the runlist, this resource has to be explicitly converged before compiling the radosgw recipe. Any recipe that calls this LWRP has to say `.run_action(:add)` after the do..end block. Alternatively, the node attributes can be set with a wrapper cookbook.
+
+#### Actions
+
+- :add - Adds the given information as a custom radosgw configuration.
+
+#### Parameters
+
+- :name - name attribute, not used
+- :region - what region should be set in the ceph.conf for this radosgw
+- :region\_root\_pool - what rados pool should be used to load region information
+- :zone - what zone should be set in the ceph.conf for this radosgw
+- :zone\_root\_pool - what rados pool should be used to load zone information
+- :keyname - what name to use when generating the cephx key for this radosgw. Defaults to client.radosgw.#{zone}.#{hostname}
+- :dns\_name - what dns name to use in ceph.conf and Apache
+- :dns\_aliases - an optional array of other hostnames to handle requests for in Apache
+- :socket\_path - the path to the socket that radosgw will use for fastcgi communications. Defaults to /var/run/ceph/ceph-radosgw.#{zone}.#{hostname}
+- :print\_continue - whether to set the `print continue` option in ceph.conf. Defaults to nil, which doesn't set the option, true or false sets the option to the given setting.
+
 ## LICENSE AND AUTHORS
 
 * Author: Kyle Bader <kyle.bader@dreamhost.com>

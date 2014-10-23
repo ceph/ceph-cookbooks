@@ -46,7 +46,16 @@
   <%= k %> = <%= v %>
   <% end %>
 <% end -%>
-<% end -%>
+
+<% node['ceph']['radosgw']['instances'].sort.each do |name, instance| -%>
+[<%= name %>]
+  host = <%= node['hostname'] %>
+  log file = /var/log/ceph/radosgw-<%= instance['rgw zone'] %>.log
+<%- instance.sort.reject{ |k,v| (! k.is_a? String) || (! v.is_a? String) }.each do |k,v| %>
+  <%= k %> = <%= v %>
+<%- end %>
+<%- end # radosgw.instances.each -%>
+<% end # if is_rgw -%>
 
 <% node['ceph']['config-sections'].sort.each do |name, sect| %>
 [<%= name %>]
