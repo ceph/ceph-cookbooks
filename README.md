@@ -34,6 +34,8 @@ https://supermarket.chef.io/
 
 * [apt](https://supermarket.chef.io/cookbooks/apt)
 * [apache2](https://supermarket.chef.io/cookbooks/apache2)
+* [yum](https://supermarket.chef.io/cookbooks/yum)
+* [yum-epel](https://supermarket.chef.io/cookbooks/yum-epel)
 
 ## TEMPLATES
 
