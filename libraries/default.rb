@@ -41,7 +41,12 @@ def osd_secret
   elsif node['ceph']['bootstrap_osd_key']
     return node['ceph']['bootstrap_osd_key']
   else
-    return mon_nodes[0]['ceph']['bootstrap_osd_key']
+    bootstrap_osd_keys = mon_nodes.map { |_, v| v.fetch('ceph', {}).fetch('bootstrap_osd_key', nil) }.compact.uniq
+    if bootstrap_osd_keys.length > 1
+      Chef::Log.fatal('Multiple bootstrap_osd_key detected')
+      raise
+    end
+    bootstrap_osd_keys.first
   end
 end
 
@@ -127,13 +132,15 @@ def mon_secret
   if node['ceph']['encrypted_data_bags']
     secret = Chef::EncryptedDataBagItem.load_secret(node['ceph']['mon']['secret_file'])
     Chef::EncryptedDataBagItem.load('ceph', 'mon', secret)['secret']
-  elsif !mon_nodes.empty?
-    mon_nodes[0]['ceph']['monitor-secret']
   elsif node['ceph']['monitor-secret']
     node['ceph']['monitor-secret']
   else
-    Chef::Log.info('No monitor secret found')
-    nil
+    monitor_secrets = mon_nodes.map { |_, v| v.fetch('ceph', {}).fetch('monitor-secret', nil) }.compact.uniq
+    if monitor_secrets.length > 1
+      Chef::Log.fatal('Multiple monitor secret detected')
+      raise
+    end
+    monitor_secrets.first
   end
 end
 

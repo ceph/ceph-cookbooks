@@ -63,14 +63,19 @@ execute 'add bootstrap-osd key to keyring' do
 end
 
 ruby_block 'save mon_secret' do
+  not_if { node['ceph']['monitor-secret'] || node['ceph']['encrypted_data_bags'] }
   block do
-    fetch = Mixlib::ShellOut.new("ceph-authtool '#{keyring}' --print-key --name=mon.")
-    fetch.run_command
-    key = fetch.stdout
-    node.set['ceph']['monitor-secret'] = key
+    if mon_secret
+      node.set['ceph']['monitor-secret'] = mon_secret
+    else
+      fetch = Mixlib::ShellOut.new("ceph-authtool '#{keyring}' --print-key --name=mon.")
+      fetch.run_command
+      key = fetch.stdout
+      node.set['ceph']['monitor-secret'] = key
+    end
     node.save
   end
-  action :nothing
+  sensitive true if Chef::Resource::Execute.method_defined? :sensitive
 end
 
 execute 'ceph-mon mkfs' do
