@@ -214,6 +214,8 @@ The ceph\_rbd LWRP provides an easy way to create, delete, attach and detach rad
 
 - :name - the name of the new rbd
 - :size - the size of the new rbd
+- :id - the id of the client (e.g admin)
+- :keyring - the path of the keyring file (e.g /etc/ceph/ceph.client.admin.keyring)
 
 ## DEVELOPING
 
