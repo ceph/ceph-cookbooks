@@ -10,8 +10,7 @@ filename = "/etc/ceph/ceph.client.#{id}.secret"
 
 ceph_client 'rbd' do
   filename filename
-  caps('mon' => 'allow r', 'osd' => 'allow rw')
-  as_keyring false
+  caps('mon' => 'allow r', 'osd' => 'allow * pool=rbd')
 end
 
 if node['ceph']['user_rbd_images']
@@ -19,6 +18,8 @@ if node['ceph']['user_rbd_images']
     # Create user-defined images
     ceph_rbd image['name'] do
       size image['size']
+      id id
+      keyring filename
       action :create
     end
   end

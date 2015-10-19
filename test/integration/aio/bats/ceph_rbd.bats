@@ -1,5 +1,5 @@
 @test "test rbd is created" {
-  rbd info rbd/rbd_test
+  rbd info rbd/rbd_test --id=rbd.vagrant --keyring=/etc/ceph/ceph.client.rbd.vagrant.secret
 }
 
 @test "test rbd is in rbdmap" {
@@ -7,5 +7,5 @@
 }
 
 @test "test rbd is attached" {
-  rbd showmapped|grep 'rbd  rbd_test'
+  rbd showmapped --id=rbd.vagrant --keyring=/etc/ceph/ceph.client.rbd.vagrant.secret |grep 'rbd  rbd_test'
 }
