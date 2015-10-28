@@ -42,14 +42,14 @@ cluster = 'ceph'
 
 keyring = "#{Chef::Config[:file_cache_path]}/#{cluster}-#{node['hostname']}.mon.keyring"
 
-execute 'format mon-secret as keyring' do # ~FC009
+execute 'format mon-secret as keyring' do
   command lazy { "ceph-authtool '#{keyring}' --create-keyring --name=mon. --add-key='#{mon_secret}' --cap mon 'allow *'" }
   creates keyring
   only_if { mon_secret }
   sensitive true if Chef::Resource::Execute.method_defined? :sensitive
 end
 
-execute 'generate mon-secret as keyring' do # ~FC009
+execute 'generate mon-secret as keyring' do
   command "ceph-authtool '#{keyring}' --create-keyring --name=mon. --gen-key --cap mon 'allow *'"
   creates keyring
   not_if { mon_secret }
