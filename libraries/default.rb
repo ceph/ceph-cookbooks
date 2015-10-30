@@ -1,26 +1,14 @@
 require 'json'
 
-def crowbar?
-  !defined?(Chef::Recipe::Barclamp).nil?
-end
-
 def mon_env_search_string
-  if crowbar?
-    mon_roles = search(:role, 'name:crowbar-* AND run_list:role\[ceph-mon\]')
-    unless mon_roles.empty?
-      search_string = mon_roles.map { |role_object| 'roles:' + role_object.name }.join(' OR ')
-      search_string = "(#{search_string}) AND ceph_config_environment:#{node['ceph']['config']['environment']}"
-    end
-  else
-    search_string = 'ceph_is_mon:true'
-    if node['ceph']['search_environment'].is_a?(String)
-      # search for nodes with this particular env
-      search_string += " AND chef_environment:#{node['ceph']['search_environment']}"
-    elsif node['ceph']['search_environment']
-      # search for any nodes with this environment
-      search_string += " AND chef_environment:#{node.chef_environment}"
-      # search for any mon nodes
-    end
+  search_string = 'ceph_is_mon:true'
+  if node['ceph']['search_environment'].is_a?(String)
+    # search for nodes with this particular env
+    search_string += " AND chef_environment:#{node['ceph']['search_environment']}"
+  elsif node['ceph']['search_environment']
+    # search for any nodes with this environment
+    search_string += " AND chef_environment:#{node.chef_environment}"
+    # search for any mon nodes
   end
   search_string
 end
@@ -110,14 +98,10 @@ def mon_addresses
     mons << node if node['ceph']['is_mon']
 
     mons += mon_nodes
-    if crowbar?
-      mon_ips = mons.map { |node| Chef::Recipe::Barclamp::Inventory.get_network_by_type(node, 'admin').address }
+    if node['ceph']['config']['global'] && node['ceph']['config']['global']['public network']
+      mon_ips = mons.map { |nodeish| find_node_ip_in_network(node['ceph']['config']['global']['public network'], nodeish) }
     else
-      if node['ceph']['config']['global'] && node['ceph']['config']['global']['public network']
-        mon_ips = mons.map { |nodeish| find_node_ip_in_network(node['ceph']['config']['global']['public network'], nodeish) }
-      else
-        mon_ips = mons.map { |node| node['ipaddress'] + ':6789' }
-      end
+      mon_ips = mons.map { |node| node['ipaddress'] + ':6789' }
     end
   end
   mon_ips.reject(&:nil?).uniq
