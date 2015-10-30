@@ -29,6 +29,7 @@ def manage_mount(directory, subdir, use_fuse, action)
       dump 0
       pass 0
       action action
+      not_if "mount | grep \"^ceph-fuse on #{Regexp.escape(directory)}\"" if action == :mount
     end
   else
     mons = mon_addresses.sort.join(',') + ':' + subdir
