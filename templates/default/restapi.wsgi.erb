@@ -1,0 +1,23 @@
+#!/usr/bin/env python
+# vim: ts=4 sw=4 smarttab expandtab
+
+import sys
+
+# import now that env vars are available to imported module
+
+try:
+    import ceph_rest_api
+except EnvironmentError as e:
+    print >> sys.stderr, "Error importing ceph_rest_api: ", str(e)
+    sys.exit(1)
+
+# let other exceptions generate traceback
+
+application = ceph_rest_api.generate_app(
+    conf = None,
+    cluster = None,
+    clientname = 'client.restapi.<%=node['hostname']%>',
+    clientid = None,
+    args = []
+)
+
