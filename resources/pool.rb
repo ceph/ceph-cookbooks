@@ -12,6 +12,7 @@ attribute :name, :kind_of => String, :name_attribute => true
 
 # The total number of placement groups for the pool.
 attribute :pg_num, :kind_of => Integer, :required => true
+attribute :pgp_num, kind_of: Integer, required: false
 
 # Optional arguments for pool creation
 attribute :create_options, :kind_of => String
