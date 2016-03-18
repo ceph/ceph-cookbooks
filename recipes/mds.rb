@@ -22,6 +22,26 @@ include_recipe 'ceph::mds_install'
 
 cluster = 'ceph'
 
+if node['ceph']['version'] >= 'giant'
+  # doesn't work on non-mon nodes, will need to be moved to lwrp
+  node['ceph']['mds']['fs'].keys.each do |fs|
+    metadata_pool = node['ceph']['mds']['fs'][fs]['metadata_pool']
+    data_pool = node['ceph']['mds']['fs'][fs]['data_pool']
+
+    [metadata_pool, data_pool].each do |pool_name|
+      execute "ensure ceph pool #{pool_name} exists" do
+        command "ceph osd pool create #{pool_name} 32"
+        not_if "rados lspools | grep '^#{Regexp.quote(pool_name)}$'"
+      end
+    end
+
+    execute "ensure cephfs #{fs} exists" do
+      command "ceph fs new #{fs} #{metadata_pool} #{data_pool}"
+      not_if "ceph fs ls | grep '^#{Regexp.quote(fs)}$'"
+    end
+  end
+end
+
 directory "/var/lib/ceph/mds/#{cluster}-#{node['hostname']}" do
   owner 'root'
   group 'root'
