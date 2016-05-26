@@ -17,7 +17,7 @@ attribute :pg_num, :kind_of => Integer, :required => true
 attribute :create_options, :kind_of => String
 
 # The number of seconds before a timeout occurs during pool creation
-attribute :timeout, :kind_of => Integer, :default => nil, :required => false
+attribute :timeout, :kind_of => Integer
 
 # Forces a non-empty pool to be deleted.
 attribute :force, :kind_of => [TrueClass, FalseClass], :default => false
