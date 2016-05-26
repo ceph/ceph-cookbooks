@@ -34,6 +34,7 @@ end
 def load_current_resource
   @current_resource = Chef::Resource::CephPool.new(@new_resource.name)
   @current_resource.name(@new_resource.name)
+  @current_resource.timeout(@new_resource.timeout)
   @current_resource.exists = pool_exists?(@current_resource.name)
 end
 
@@ -57,7 +58,7 @@ def delete_pool
 end
 
 def pool_exists?(name)
-  cmd = Mixlib::ShellOut.new("ceph osd pool get #{name} size")
+  cmd = Mixlib::ShellOut.new("ceph osd pool get #{name} size", :timeout => current_resource.timeout)
   cmd.run_command
   cmd.error!
   Chef::Log.debug "Pool exists: #{cmd.stdout}"
