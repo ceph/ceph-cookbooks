@@ -51,7 +51,7 @@ def delete_pool
   cmd_text = "ceph osd pool delete #{new_resource.name}"
   cmd_text << " #{new_resource.name} --yes-i-really-really-mean-it" if
     new_resource.force
-  cmd = Mixlib::ShellOut.new(cmd_text)
+  cmd = Mixlib::ShellOut.new(cmd_text, :timeout => new_resource.timeout)
   cmd.run_command
   cmd.error!
   Chef::Log.debug "Pool deleted: #{cmd.stderr}"
