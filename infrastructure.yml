@@ -3,4 +3,3 @@ roles:
 - ceph-mon:
 - ceph-osd:
 - ceph-radosgw:
-- ceph-tgt:
