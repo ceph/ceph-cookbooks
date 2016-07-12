@@ -59,7 +59,7 @@ The other set of attributes that this recipe needs is `node['ceph']['osd_devices
 
 * {'device' => '/dev/sdb'} - Use a full disk for the OSD, with a small partition for the journal
 * {'type' => 'directory', 'device' => '/src/node/sdb1/ceph'} - Use a directory, and have a small file for the journal
-* {'device' => '/dev/sde', 'dmcrypt' => true} - Store the data encrypted by passing --dmcrypt to `ceph-disk-prepare`
+* {'device' => '/dev/sde', 'dmcrypt' => true} - Store the data encrypted by passing --dmcrypt to `ceph-disk prepare`
 * {'device' => '/dev/sdc', 'journal' => '/dev/sdd2'} - use a full disk for the OSD with a custom partition for the journal
 
 ### Using a Policy Wrapper Cookbook

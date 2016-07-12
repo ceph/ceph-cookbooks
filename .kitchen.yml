@@ -1,7 +1,8 @@
 ---
-driver_plugin: vagrant
-driver_config:
-  vagrantfile_erb: test/integration/Vagrantfile.erb
+driver:
+  name: vagrant
+  vagrantfiles:
+    - test/integration/Vagrantfile.rb
   require_chef_omnibus: true
 
 platforms:
@@ -34,9 +35,9 @@ suites:
       config:
         fsid: ae3f1d03-bacd-4a90-b869-1a4fabb107f2
         mon_initial_members:
-          - "127.0.0.1"
 - name: osd
   run_list:
+    - "role[ceph-mon]"
     - "role[ceph-osd]"
   attributes: *defaults
 - name: mon
@@ -45,10 +46,12 @@ suites:
   attributes: *defaults
 - name: mds
   run_list:
+    - "role[ceph-mon]"
     - "role[ceph-mds]"
   attributes: *defaults
 - name: radosgw
   run_list:
+    - "role[ceph-mon]"
     - "role[ceph-radosgw]"
   attributes: *defaults
 - name: aio

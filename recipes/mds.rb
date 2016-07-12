@@ -31,20 +31,24 @@ if node['ceph']['version'] >= 'giant'
     [metadata_pool, data_pool].each do |pool_name|
       execute "ensure ceph pool #{pool_name} exists" do
         command "ceph osd pool create #{pool_name} 32"
+        user node['ceph']['user']
+        group node['ceph']['group']
         not_if "rados lspools | grep '^#{Regexp.quote(pool_name)}$'"
       end
     end
 
     execute "ensure cephfs #{fs} exists" do
       command "ceph fs new #{fs} #{metadata_pool} #{data_pool}"
+      user node['ceph']['user']
+      group node['ceph']['group']
       not_if "ceph fs ls | grep '^#{Regexp.quote(fs)}$'"
     end
   end
 end
 
 directory "/var/lib/ceph/mds/#{cluster}-#{node['hostname']}" do
-  owner 'root'
-  group 'root'
+  owner node['ceph']['user']
+  group node['ceph']['group']
   mode 00755
   recursive true
   action :create
@@ -54,6 +58,8 @@ ceph_client 'mds' do
   caps('osd' => 'allow *', 'mon' => 'allow rwx')
   keyname "mds.#{node['hostname']}"
   filename "/var/lib/ceph/mds/#{cluster}-#{node['hostname']}/keyring"
+  owner node['ceph']['user']
+  group node['ceph']['group']
 end
 
 file "/var/lib/ceph/mds/#{cluster}-#{node['hostname']}/done" do

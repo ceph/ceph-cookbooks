@@ -1,9 +1,21 @@
+# Major release version to install or gitbuilder branch
+default['ceph']['version'] = 'jewel'
+
 default['ceph']['install_debug'] = false
 default['ceph']['encrypted_data_bags'] = false
 
 default['ceph']['install_repo'] = true
 
 default['ceph']['user_pools'] = []
+
+# starting with Infernalis release, ceph runs as non-root by default
+if default['ceph']['version'] >= 'infernalis'
+  default['ceph']['user'] = 'ceph'
+  default['ceph']['group'] = 'ceph'
+else
+  default['ceph']['user'] = 'root'
+  default['ceph']['group'] = 'root'
+end
 
 case node['platform']
 when 'ubuntu'

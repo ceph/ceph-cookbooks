@@ -22,16 +22,16 @@ include_recipe 'ceph::mon_install'
 service_type = node['ceph']['mon']['init_style']
 
 directory '/var/run/ceph' do
-  owner 'root'
-  group 'root'
+  owner node['ceph']['user']
+  group node['ceph']['group']
   mode 00755
   recursive true
   action :create
 end
 
 directory "/var/lib/ceph/mon/ceph-#{node['hostname']}" do
-  owner 'root'
-  group 'root'
+  owner node['ceph']['user']
+  group node['ceph']['group']
   mode 00755
   recursive true
   action :create
@@ -40,10 +40,12 @@ end
 # TODO: cluster name
 cluster = 'ceph'
 
-keyring = "#{Chef::Config[:file_cache_path]}/#{cluster}-#{node['hostname']}.mon.keyring"
+keyring = "/var/run/ceph/#{cluster}-#{node['hostname']}.mon.keyring"
 
 execute 'format mon-secret as keyring' do # ~FC009
   command lazy { "ceph-authtool '#{keyring}' --create-keyring --name=mon. --add-key='#{mon_secret}' --cap mon 'allow *'" }
+  user node['ceph']['user']
+  group node['ceph']['group']
   creates keyring
   only_if { mon_secret }
   sensitive true if Chef::Resource::Execute.method_defined? :sensitive
@@ -51,6 +53,8 @@ end
 
 execute 'generate mon-secret as keyring' do # ~FC009
   command "ceph-authtool '#{keyring}' --create-keyring --name=mon. --gen-key --cap mon 'allow *'"
+  user node['ceph']['user']
+  group node['ceph']['group']
   creates keyring
   not_if { mon_secret }
   notifies :create, 'ruby_block[save mon_secret]', :immediately
@@ -59,12 +63,14 @@ end
 
 execute 'add bootstrap-osd key to keyring' do
   command lazy { "ceph-authtool '#{keyring}' --name=client.bootstrap-osd --add-key='#{osd_secret}' --cap mon 'allow profile bootstrap-osd'  --cap osd 'allow profile bootstrap-osd'" }
+  user node['ceph']['user']
+  group node['ceph']['group']
   only_if { node['ceph']['encrypted_data_bags'] && osd_secret }
 end
 
 ruby_block 'save mon_secret' do
   block do
-    fetch = Mixlib::ShellOut.new("ceph-authtool '#{keyring}' --print-key --name=mon.")
+    fetch = Mixlib::ShellOut.new("ceph-authtool '#{keyring}' --print-key --name=mon.", user: node['ceph']['user'], group: node['ceph']['group'])
     fetch.run_command
     key = fetch.stdout
     node.set['ceph']['monitor-secret'] = key
@@ -75,6 +81,8 @@ end
 
 execute 'ceph-mon mkfs' do
   command "ceph-mon --mkfs -i #{node['hostname']} --keyring '#{keyring}'"
+  user node['ceph']['user']
+  group node['ceph']['group']
 end
 
 ruby_block 'finalise' do
@@ -112,6 +120,8 @@ end
 mon_addresses.each do |addr|
   execute "peer #{addr}" do
     command "ceph --admin-daemon '/var/run/ceph/ceph-mon.#{node['hostname']}.asok' add_bootstrap_peer_hint #{addr}"
+    user node['ceph']['user']
+    group node['ceph']['group']
     ignore_failure true
   end
 end
@@ -123,7 +133,7 @@ if use_cephx? && !node['ceph']['encrypted_data_bags']
     block do
       run_out = ''
       while run_out.empty?
-        run_out = Mixlib::ShellOut.new('ceph auth get-key client.bootstrap-osd').run_command.stdout.strip
+        run_out = Mixlib::ShellOut.new('ceph auth get-key client.bootstrap-osd', user: node['ceph']['user'], group: node['ceph']['group']).run_command.stdout.strip
         sleep 2
       end
       node.set['ceph']['bootstrap_osd_key'] = run_out

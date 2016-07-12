@@ -9,7 +9,7 @@ end
 
 directory '/etc/ceph' do
   owner 'root'
-  group 'root'
+  group node['ceph']['group']
   mode '0755'
   action :create
 end
@@ -22,5 +22,7 @@ template '/etc/ceph/ceph.conf' do
       :is_rgw => node['ceph']['is_radosgw']
     }
   }
+  owner 'root'
+  group node['ceph']['group']
   mode '0644'
 end

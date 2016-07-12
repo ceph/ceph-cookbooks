@@ -15,9 +15,9 @@ yum_repository 'ceph' do
   gpgkey node['ceph'][platform_family][branch]['repository_key']
 end
 
-package 'parted'    # needed by ceph-disk-prepare to run partprobe
+package 'parted'    # needed by ceph-disk prepare to run partprobe
 package 'hdparm'    # used by ceph-disk activate
-package 'xfsprogs'  # needed by ceph-disk-prepare to format as xfs
+package 'xfsprogs'  # needed by ceph-disk prepare to format as xfs
 if node['platform_family'] == 'rhel' && node['platform_version'].to_f > 6
   package 'btrfs-progs' # needed to format as btrfs, in the future
 end
