@@ -9,7 +9,7 @@ default['ceph']['install_repo'] = true
 default['ceph']['user_pools'] = []
 
 # starting with Infernalis release, ceph runs as non-root by default
-if default['ceph']['version'] >= 'infernalis'
+if node['ceph']['version'] >= 'infernalis'
   default['ceph']['user'] = 'ceph'
   default['ceph']['group'] = 'ceph'
 else
