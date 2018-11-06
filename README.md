@@ -199,6 +199,24 @@ It assumes that connectivity to the cluster is setup and that admin credentials 
 - :create_options - arguments for pool creation (optional)
 - :force - force the deletion of an exiting pool along with any data that is stored in it
 
+### ceph\_rbd (Rados Block Device)
+
+The ceph\_rbd LWRP provides an easy way to create, delete, attach and detach rados block devices.
+
+#### Actions
+
+- :crete - creates an rbd with the given parameters
+- :delete - deletes an rbd
+- :attach - attach an existing rbd
+- :detach - detach rbd
+
+#### Parameters
+
+- :name - the name of the new rbd
+- :size - the size of the new rbd
+- :id - the id of the client (e.g admin)
+- :keyring - the path of the keyring file (e.g /etc/ceph/ceph.client.admin.keyring)
+
 ## DEVELOPING
 
 ### Style Guide
