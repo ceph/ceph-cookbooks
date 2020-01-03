@@ -46,8 +46,8 @@ end
 service_type = node['ceph']['osd']['init_style']
 
 directory '/var/lib/ceph/bootstrap-osd' do
-  owner 'root'
-  group 'root'
+  owner 'ceph'
+  group 'ceph'
   mode '0755'
 end
 
@@ -63,8 +63,8 @@ end
 
 if crowbar?
   node['crowbar']['disks'].each do |disk, _data|
-    execute "ceph-disk-prepare #{disk}" do
-      command "ceph-disk-prepare /dev/#{disk}"
+    execute "ceph-disk prepare #{disk}" do
+      command "ceph-disk prepare /dev/#{disk}"
       only_if { node['crowbar']['disks'][disk]['usage'] == 'Storage' }
       notifies :run, 'execute[udev trigger]', :immediately
     end
@@ -82,9 +82,9 @@ if crowbar?
     action :nothing
   end
 else
-  # Calling ceph-disk-prepare is sufficient for deploying an OSD
-  # After ceph-disk-prepare finishes, the new device will be caught
-  # by udev which will run ceph-disk-activate on it (udev will map
+  # Calling `ceph-disk prepare` is sufficient for deploying an OSD
+  # After `ceph-disk prepare` finishes, the new device will be caught
+  # by udev which will run `ceph-disk activate` on it (udev will map
   # the devices if dm-crypt is used).
   # IMPORTANT:
   #  - Always use the default path for OSD (i.e. /var/lib/ceph/
@@ -103,21 +103,21 @@ else
       end
 
       directory osd_device['device'] do # ~FC022
-        owner 'root'
-        group 'root'
+        owner 'ceph'
+        group 'ceph'
         recursive true
         only_if { osd_device['type'] == 'directory' }
       end
 
-      dmcrypt = osd_device['encrypted'] == true ? '--dmcrypt' : ''
+      dmcrypt = osd_device['encrypted'] == 'true' ? '--dmcrypt' : ''
 
-      execute "ceph-disk-prepare on #{osd_device['device']}" do
-        command "ceph-disk-prepare #{dmcrypt} #{osd_device['device']} #{osd_device['journal']}"
+      execute "ceph-disk prepare on #{osd_device['device']}" do
+        command "ceph-disk prepare #{dmcrypt} #{osd_device['device']} #{osd_device['journal']}"
         action :run
         notifies :create, "ruby_block[save osd_device status #{index}]", :immediately
       end
 
-      execute "ceph-disk-activate #{osd_device['device']}" do
+      execute "ceph-disk activate #{osd_device['device']}" do
         only_if { osd_device['type'] == 'directory' }
       end
 
@@ -133,16 +133,18 @@ else
         action :nothing
       end
     end
-    service 'ceph_osd' do
-      case service_type
-      when 'upstart'
+    if service_type == 'upstart'
+      service 'ceph_osd' do
         service_name 'ceph-osd-all-starter'
         provider Chef::Provider::Service::Upstart
-      else
-        service_name 'ceph'
+        action [:enable]
+        supports :restart => true
       end
-      action [:enable, :start]
-      supports :restart => true
+    elsif service_type == 'systemd'
+      unit = "ceph-osd@#{node['hostname']}.service"
+      systemd_unit unit do
+        action :enable
+      end
     end
   else
     Log.info('node["ceph"]["osd_devices"] empty')

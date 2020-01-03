@@ -1,9 +1,9 @@
 #
-# Author:: Kyle Bader <kyle.bader@dreamhost.com>
+# Author:: Jeremy Hanmer <jeremy@dreamhost.com>
 # Cookbook Name:: ceph
-# Recipe:: mds
+# Recipe:: mgr
 #
-# Copyright 2011, DreamHost Web Hosting
+# Copyright 2017, DreamHost Web Hosting
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,27 +18,27 @@
 # limitations under the License.
 
 include_recipe 'ceph'
-include_recipe 'ceph::mds_install'
+include_recipe 'ceph::mgr_install'
 
 cluster = 'ceph'
 
-directory "/var/lib/ceph/mds/#{cluster}-#{node['hostname']}" do
-  owner node['ceph']['owner']
-  group node['ceph']['group']
+directory "/var/lib/ceph/mgr/#{cluster}-#{node['hostname']}" do
+  owner 'root'
+  group 'root'
   mode 00755
   recursive true
   action :create
 end
 
-ceph_client 'mds' do
-  caps('osd' => 'allow *', 'mon' => 'allow rwx')
-  keyname "mds.#{node['hostname']}"
-  filename "/var/lib/ceph/mds/#{cluster}-#{node['hostname']}/keyring"
+ceph_client 'mgr' do
+  caps('osd' => 'allow *', 'mon' => 'allow profile mgr', 'mds' => 'allow *')
+  keyname "mgr.#{node['hostname']}"
+  filename "/var/lib/ceph/mgr/#{cluster}-#{node['hostname']}/keyring"
   owner node['ceph']['owner']
   group node['ceph']['group']
 end
 
-file "/var/lib/ceph/mds/#{cluster}-#{node['hostname']}/done" do
+file "/var/lib/ceph/mgr/#{cluster}-#{node['hostname']}/done" do
   owner 'root'
   group 'root'
   mode 00644
@@ -52,21 +52,20 @@ when 'upstart'
 else
   filename = 'sysvinit'
 end
-file "/var/lib/ceph/mds/#{cluster}-#{node['hostname']}/#{filename}" do
+file "/var/lib/ceph/mgr/#{cluster}-#{node['hostname']}/#{filename}" do
   owner 'root'
   group 'root'
   mode 00644
 end
 
 if service_type == 'upstart'
-  service 'ceph_mds' do
-    service_name 'ceph-mds-all-starter'
-    provider Chef::Provider::Service::Upstart
+  service 'ceph_mgr' do
+    service_name 'ceph-mgr'
+    action [:enable, :start]
+    supports :restart => true
   end
-  action [:enable, :start]
-  supports :restart => true
 elsif service_type == 'systemd'
-  unit = "ceph-mds@#{node['hostname']}.service"
+  unit = "ceph-mgr@#{node['hostname']}.service"
   systemd_unit unit do
     action :enable
   end
